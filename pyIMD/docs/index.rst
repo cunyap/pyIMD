@@ -31,13 +31,15 @@ Welcome to pyIMD's documentation!
 .. image:: https://anaconda.org/cunya/pyimd/badges/installer/conda.svg
         :target: https://anaconda.org/cunya/pyimd
 
-.. image:: https://travis-ci.com/cunyap/pyIMDT.svg?branch=master
-    :target: https://travis-ci.com/cunyap/pyIMDT
+.. image:: https://img.shields.io/travis/com/cunyap/pyIMD.svg?logo=travis
+    :target: https://travis-ci.com/cunyap/pyIMD
+
+.. image:: https://ci.appveyor.com/api/projects/status/d4cjh9f6gx15n2y1?svg=true
+    :target: https://ci.appveyor.com/project/cunyap/pyimd
+
 
 .. figure:: ../examples/figures/pyIMD_ShowCaseFigure_web.png
-    :alt: pyIMD demonstration
-    
-    
+
     Evolution of mass over time and the corresponding microscopy images are shown for a time span of 20min.
     The mass data was acquired every 10 ms (data shown in black), overlaid in red is the rolling mean with a window of
     1000. Images taken every 3 min over the observed times span. The mammalian cell increases mass steadily..

@@ -26,8 +26,12 @@ Welcome to pyIMD!
 .. image:: https://anaconda.org/cunya/pyimd/badges/installer/conda.svg
         :target: https://anaconda.org/cunya/pyimd
 
-.. image:: https://travis-ci.com/cunyap/pyIMDT.svg?branch=master
-    :target: https://travis-ci.com/cunyap/pyIMDT
+.. image:: https://img.shields.io/travis/com/cunyap/pyIMD.svg?logo=travis
+    :target: https://travis-ci.com/cunyap/pyIMD
+
+.. image:: https://ci.appveyor.com/api/projects/status/d4cjh9f6gx15n2y1?svg=true
+    :target: https://ci.appveyor.com/project/cunyap/pyimd
+
         
 .. figure:: /pyIMD/examples/figures/pyIMD_ShowCaseFigure_web.png
     :width: 400 px
