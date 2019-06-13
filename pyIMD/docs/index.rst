@@ -39,6 +39,8 @@ Welcome to pyIMD's documentation!
 
 
 .. figure:: ../examples/figures/pyIMD_ShowCaseFigure_web.png
+    :alt: pyIMD demonstration
+
 
     Evolution of mass over time and the corresponding microscopy images are shown for a time span of 20min.
     The mass data was acquired every 10 ms (data shown in black), overlaid in red is the rolling mean with a window of
