@@ -1,40 +1,35 @@
 #!/bin/bash
+#----------
+# NOTE:
+# Use for building: conda build pyimd/meta.yaml -c conda-forge
+#----------
+pkg="pyIMD"
+versions=(3.6)
+pkgL=$(echo "$pkg" | tr '[:upper:]' '[:lower:]')
 
-pkg='pyIMD'
-array=( 3.5 3.6 3.7 )
+#Building packages
+#echo "Start building process"
+#cd ~
+#conda skeleton pypi $pkg
+#conda skeleton pypi $pkg --recursive
 
-echo "Building conda package ..."
-cd ~
-conda skeleton pypi $pkg
-cd $pkg
-wget https://conda.io/docs/_downloads/build1.sh
-wget https://conda.io/docs/_downloads/bld.bat
-cd ~
+#for k in "${versions[@]}"
+#do
+#     conda-build --python $k $pkgL -c conda-forge
+#done
 
-# building conda packages
-for i in "${array[@]}"
-do
-	conda-build --python $i $pkg
-done
-
-# convert package for other platforms
-cd ~
-platforms=( osx-64 linux-32 linux-64 win-32 win-64 )
-find $HOME/conda-bld/linux-64/ -name *.tar.bz2 | while read file
+# Convert to other platforms
+find ~/anaconda3/conda-bld/linux-64 -name "*.bz2" | while read file
 do
     echo $file
-    #conda convert --platform all $file  -o $HOME/conda-bld/
-    for platform in "${platforms[@]}"
-    do
-       conda convert --platform $platform $file  -o $HOME/conda-bld/
-    done
+    conda convert --platform all $file -o ~/anaconda3/conda-bld/all
 done
 
-# upload packages to conda
-find $HOME/conda-bld/ -name *.tar.bz2 | while read file
+# Upload build files
+find ~/anaconda3/conda-bld/all -name "*.bz2" | while read file
 do
     echo $file
     anaconda upload $file
 done
 
-echo "Building conda package done!"
+echo "Done building all conda packages!"

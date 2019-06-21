@@ -44,10 +44,9 @@ def calculate_mass(spring_constant, res_freq_after_cell_load, res_freq_before_ce
 def calculate_resonance_frequencies(frequency_array, phase_array, initial_param_guess, lower_param_bounds,
                                     upper_param_bounds):
 
-    """Calculate_resonance_frequencies calculates the resonance frequency
-       from input frequency and phase array. It does so via fitting the phase response of a harmonic oscillator \
-       (defined in pyIMD.analysis.curve_fit). The first fit parameter of the fit parameter array is the resonance \
-       frequency.
+    """Calculate_resonance_frequencies calculates the resonance frequency from input frequency and phase array. It does \
+    so via fitting the phase response of a harmonic oscillator (defined in pyIMD.analysis.curve_fit). The first fit \
+    parameter of the fit parameter array is the resonance frequency.
 
     Args:
         frequency_array (`float array`):        Array of frequencies [in kHz]
