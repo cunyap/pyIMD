@@ -100,3 +100,30 @@ def calculate_position_correction(cell_position, cantilever_length):
                     * (np.sin(k * (cantilever_length - cell_position)) - np.sinh(k *
                                                                                  (cantilever_length-cell_position)))))
             ** 2)
+
+
+def calculate_center_of_mass(polygon_vertices):
+    """ Calculates the center of mass for a polygon defined by a list of vertices. Based on formulas taken from
+    https://en.wikipedia.org/wiki/Centroid
+
+    Args:
+        polygon_vertices ('int'):   List of polygon vertices where as each vertex contains an X and Y coordinate.
+
+    Returns:
+        center_of_mass ('int'):     X and Y coordinate of the polygon center of mass
+    """
+
+    delta = polygon_vertices[0]
+    center_of_mass = [0, 0, 0]
+    area = 0
+    for i in range(len(polygon_vertices)):
+        vertex1 = polygon_vertices[i]
+        vertex2 = polygon_vertices[i - 1]
+        f = (vertex1[0] - delta[0]) * (vertex2[1] - delta[1]) - (vertex2[0] - delta[0]) * (vertex1[1] - delta[1])
+        area += f
+        center_of_mass[0] += (vertex1[0] + vertex2[0] - 2 * delta[0]) * f
+        center_of_mass[1] += (vertex1[1] + vertex2[1] - 2 * delta[1]) * f
+    center_of_mass[0] = center_of_mass[0] / (3 * area) + delta[0]
+    center_of_mass[1] = center_of_mass[1] / (3 * area) + delta[1]
+    center_of_mass[2] = abs(area/2)
+    return center_of_mass
