@@ -385,23 +385,25 @@ class InertialMassDetermination(QObject):
     def convert_data(self):
         """ Converts imported data to correct units needed for further calculation.
         """
-
-        attributes = ['data_pre_start_no_cell', 'data_pre_start_with_cell']
-        for iAttribute in attributes:
-            getattr(self, str(iAttribute)).iloc[:, 0] = getattr(self, str(iAttribute)).iloc[:, 0] / \
-                                                        self.settings.conversion_factor_hz_to_khz
-            getattr(self, str(iAttribute)).iloc[:, 2] = getattr(self, str(iAttribute)).iloc[:, 2] / \
-                                                        self.settings.conversion_factor_deg_to_rad
-        if self.settings.calculation_mode == 'Cont.Sweep':
-            for iSweep in range(0, len(self.data_measured), 3):
-                # Calc resonance frequency and function fit for the ith sweep (iSweep)
-                self.data_measured.iloc[iSweep + 1, 0:255] = self.data_measured.iloc[iSweep + 1, 0:255] / \
-                                                             self.settings.conversion_factor_deg_to_rad
-                self.data_measured.iloc[iSweep + 2, 0:255] = self.data_measured.iloc[iSweep + 2, 0:255] / \
-                                                             self.settings.conversion_factor_hz_to_khz
-        else:
-            self.data_measured.iloc[:, 5] = self.data_measured.iloc[:, 5] / self.settings.conversion_factor_deg_to_rad
-            self.data_measured.iloc[:, 6] = self.data_measured.iloc[:, 6] / self.settings.conversion_factor_hz_to_khz
+        try:
+            attributes = ['data_pre_start_no_cell', 'data_pre_start_with_cell']
+            for iAttribute in attributes:
+                getattr(self, str(iAttribute)).iloc[:, 0] = getattr(self, str(iAttribute)).iloc[:, 0] / \
+                                                            self.settings.conversion_factor_hz_to_khz
+                getattr(self, str(iAttribute)).iloc[:, 2] = getattr(self, str(iAttribute)).iloc[:, 2] / \
+                                                            self.settings.conversion_factor_deg_to_rad
+            if self.settings.calculation_mode == 'Cont.Sweep':
+                for iSweep in range(0, len(self.data_measured), 3):
+                    # Calc resonance frequency and function fit for the ith sweep (iSweep)
+                    self.data_measured.iloc[iSweep + 1, 0:255] = self.data_measured.iloc[iSweep + 1, 0:255] / \
+                                                                 self.settings.conversion_factor_deg_to_rad
+                    self.data_measured.iloc[iSweep + 2, 0:255] = self.data_measured.iloc[iSweep + 2, 0:255] / \
+                                                                 self.settings.conversion_factor_hz_to_khz
+            else:
+                self.data_measured.iloc[:, 5] = self.data_measured.iloc[:, 5] / self.settings.conversion_factor_deg_to_rad
+                self.data_measured.iloc[:, 6] = self.data_measured.iloc[:, 6] / self.settings.conversion_factor_hz_to_khz
+        except Exception as e:
+            self.logger.info("Error during data conversion: " + str(e))
 
     def concatenate_files(self, directory, time_interval, **kwargs):
         """
