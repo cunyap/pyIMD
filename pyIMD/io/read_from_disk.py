@@ -56,6 +56,10 @@ def read_from_text(file, delimiter, read_from_row):
         data.rename(columns={0: ('Frequency (%s)' % unit)}, inplace=True)
     else:
         data = read_csv(file, sep=delimiter, skiprows=read_from_row)
+
+    # Handle cases where data in text files is represented with commas instead of periods.
+    if type(data.iloc[1, 0]) == str:
+        data = read_csv(file, sep=delimiter, skiprows=read_from_row, decimal=",")
     return data
 
 
