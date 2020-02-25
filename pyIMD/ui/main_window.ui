@@ -310,8 +310,16 @@
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionConcatenate_Files"/>
+    <addaction name="actionPosition_correction"/>
+   </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuView"/>
+   <addaction name="menuTools"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -419,6 +427,16 @@
   <action name="actionRead_documentation">
    <property name="text">
     <string>Read documentation</string>
+   </property>
+  </action>
+  <action name="actionConcatenate_Files">
+   <property name="text">
+    <string>Concatenate Files</string>
+   </property>
+  </action>
+  <action name="actionPosition_correction">
+   <property name="text">
+    <string>Position correction</string>
    </property>
   </action>
  </widget>

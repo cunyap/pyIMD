@@ -15,6 +15,7 @@ import xmltodict
 import json
 import yaml
 import datetime
+import numpy as np
 from lxml import etree
 from pyIMD.configuration.defaults import *
 
@@ -58,6 +59,20 @@ class Settings(object):
         self.pre_start_with_cell_path = ''
         self.measurements_path = ''
         self.selected_files = []
+        # Position correction parameters
+        self.image_files = []
+        self.cell_offsets = []
+        self.cell_center_of_mass_x = []
+        self.cell_center_of_mass_y = []
+        self.ref_line_1_x = []
+        self.ref_line_1_y = []
+        self.ref_line_2_x = []
+        self.ref_line_2_y = []
+
+        self.image_start_index = 0
+        self.position_correction_end_frame = 0
+        self.number_of_data_per_frame = 0
+        self.is_zero_outside_correction_range = True
 
     def __repr__(self):
         """
@@ -501,6 +516,174 @@ class Settings(object):
             raise Exception("Selected files should be a of type list.")
         self._selected_files = files
 
+    image_files = property(operator.attrgetter('_image_files'))
+    """
+      Parameter defining the image files used for cell tip offset determination.
+
+      Args:
+          files (`list`):    Selected files for cell tip offset determination.
+    """
+    @image_files.setter
+    def image_files(self, files):
+        if not (type(files) == list):
+            raise Exception("Selected files should be a of type list.")
+        self._image_files = files
+
+    cell_offsets = property(operator.attrgetter('_cell_offsets'))
+    """
+      Parameter defining the cell position offset in respect to the cantilever tip for the given image files.
+
+      Args:
+          offsets (`list`):    List of the cell position offsets for the given image files.
+    """
+    @cell_offsets.setter
+    def cell_offsets(self, offsets):
+        if not (type(offsets) == list):
+            raise Exception("Offsets should be a of type list.")
+        self._cell_offsets = offsets
+
+    cell_center_of_mass_x = property(operator.attrgetter('_cell_center_of_mass_x'))
+    """
+      Parameter defining the x component of the cell position centroid for the given image files.
+
+      Args:
+          cell_center_of_mass_x (`list`):    List of the x component of the cell position centroid offsets for the given
+                                             image files.
+    """
+    @cell_center_of_mass_x.setter
+    def cell_center_of_mass_x(self, x):
+        if not (type(x) == list):
+            raise Exception("Center of mass x components should be a of type list.")
+        self._cell_center_of_mass_x = x
+
+    cell_center_of_mass_y = property(operator.attrgetter('_cell_center_of_mass_y'))
+    """
+      Parameter defining the y component of the cell position centroid for the given image files.
+
+      Args:
+          cell_center_of_mass_y (`list`):    List of the y component of the cell position centroid offsets for the given
+                                             image files.
+    """
+    @cell_center_of_mass_y.setter
+    def cell_center_of_mass_y(self, y):
+        if not (type(y) == list):
+            raise Exception("Center of mass y components should be a of type list.")
+        self._cell_center_of_mass_y = y
+
+    ref_line_1_x = property(operator.attrgetter('_ref_line_1_x'))
+    """
+      Parameter defining the x component of the reference line point 1 for the given image files.
+
+      Args:
+          ref_line_1_x (`list`):    List of the x component of the reference line point 1 for the given image files.
+    """
+    @ref_line_1_x.setter
+    def ref_line_1_x(self, x):
+        if not (type(x) == list):
+            raise Exception("Reference line point 1 x components should be a of type list.")
+        self._ref_line_1_x = x
+
+    ref_line_1_y = property(operator.attrgetter('_ref_line_1_y'))
+    """
+      Parameter defining the y component of the reference line point 1 for the given image files.
+
+      Args:
+          ref_line_1_y (`list`):    List of the y component of the reference line point 1 for the given image files.
+    """
+    @ref_line_1_y.setter
+    def ref_line_1_y(self, y):
+        if not (type(y) == list):
+            raise Exception("Reference line point 1 y components should be a of type list.")
+        self._ref_line_1_y = y
+
+    ref_line_2_x = property(operator.attrgetter('_ref_line_2_x'))
+    """
+      Parameter defining the x component of the reference line point 2 for the given image files.
+
+      Args:
+          ref_line_2_x (`list`):    List of the x component of the reference line point 1 for the given image files.
+    """
+
+    @ref_line_2_x.setter
+    def ref_line_2_x(self, x):
+        if not (type(x) == list):
+            raise Exception("Reference line point 2 x components should be a of type list.")
+        self._ref_line_2_x = x
+
+    ref_line_2_y = property(operator.attrgetter('_ref_line_2_y'))
+    """
+      Parameter defining the y component of the reference line point 2 for the given image files.
+
+      Args:
+          ref_line_2_y (`list`):    List of the y component of the reference line point 2 for the given image files.
+    """
+
+    @ref_line_2_y.setter
+    def ref_line_2_y(self, y):
+        if not (type(y) == list):
+            raise Exception("Reference line point 2 y components should be a of type list.")
+        self._ref_line_2_y = y
+
+    image_start_index = property(operator.attrgetter('_image_start_index'))
+    """
+      Parameter defining the image start data index for the given image files if experiment and imaging were not started 
+      synchronously.
+
+      Args:
+          image_start_index (`int`):    Image start data index for the given image files.
+    """
+
+    @image_start_index.setter
+    def image_start_index(self, idx):
+        if not (type(idx) == int):
+            raise Exception("Image start data index should be a of type int.")
+        self._image_start_index = idx
+
+    position_correction_end_frame = property(operator.attrgetter('_position_correction_end_frame'))
+    """
+      Parameter defining the image end frame number for the given image files to indicate until where the data can be 
+      position correction.
+
+      Args:
+          position_correction_end_frame (`int`):    Image end frame number for the given image files.
+    """
+
+    @position_correction_end_frame.setter
+    def position_correction_end_frame(self, idx):
+        if not (type(idx) == int):
+            raise Exception("Image end frame number should be a of type int.")
+        self._position_correction_end_frame = idx
+
+    number_of_data_per_frame = property(operator.attrgetter('_number_of_data_per_frame'))
+    """
+      Parameter defining the number of acquired data points between two image frames.
+
+      Args:
+          number_of_data_per_frame (`int`):    Number of acquired data points between two image frames.
+    """
+
+    @number_of_data_per_frame.setter
+    def number_of_data_per_frame(self, idx):
+        if not (type(idx) == int):
+            raise Exception("Number of data per frame should be a of type int.")
+        self._number_of_data_per_frame = idx
+
+    is_zero_outside_correction_range = property(operator.attrgetter('_is_zero_outside_correction_range'))
+    """
+      Parameter defining the condition if measured data points outside the position correction range should be set to 
+      zero (true) or to one (false)
+
+      Args:
+          is_zero_outside_correction_range (`bool`):    True if measured data points outside the position correction 
+                                                        range should be set to zero. If false to one.
+    """
+
+    @is_zero_outside_correction_range.setter
+    def is_zero_outside_correction_range(self, condition):
+        if not (type(condition) == bool):
+            raise Exception("Condition should be of type bool.")
+        self._is_zero_outside_correction_range = condition
+
     def new_pyimd_project(self, pre_start_no_cell_path, pre_start_with_cell_path, measurements_path,
                           text_data_delimiter, read_text_data_from_line, calculation_mode, ** kwargs):
         """
@@ -552,6 +735,27 @@ class Settings(object):
             cell_position (`float`):                 Cell position offset from cantilever tip in microns
             project_folder_path (`str`):             Path to project data files. Also used to store pyIMD results
                                                      such as data and figures.
+            image_files (`list`):                    List of strings with image file name paths used for cell position
+                                                     offset determination.
+            cell_offsets (`list`):                   List of cell position offsets for the given image series in
+                                                     image_files.
+            cell_center_of_mass_x (`list`):          List of cell center of mass x components for the given image series
+                                                     in image_files.
+            cell_center_of_mass_y (`list`):          List of cell center of mass y components for the given image series
+                                                     in image_files.
+            ref_line_1_x (`list`):                   List of reference line point 1 x components for the given image
+                                                     series in image_files.
+            ref_line_1_y (`list`):                   List of reference line point 1 y components for the given image
+                                                     series in image_files.
+            ref_line_2_x (`list`):                   List of reference line point 2 x components for the given image
+                                                     series in image_files.
+            ref_line_2_y (`list`):                   List of reference line point 2 y components for the given image
+                                                     series in image_files.
+            image_start_index (`int`):               Measured data index which corresponds to first image frame
+            position_correction_end_frame (`int`):   Image frame until which the position should be computed
+            number_of_data_per_frame (`int`):        Number of measurement points between two image frames.
+            is_zero_outside_correction_range (`bool`):Bool determining if data will be set to zero outside of position
+                                                     corrected range
         """
 
         try:
@@ -609,16 +813,49 @@ class Settings(object):
 
             for key, value in ui_settings.items():
                 try:
-                    if not key == 'selected_files':
-                        setattr(self, key, yaml.safe_load(json.loads(json.dumps(value))))
-                    else:
+                    if key == 'selected_files' or key == 'image_files':
                         setattr(self, key, value['File'])
+                    elif key == 'cell_offsets':
+                        setattr(self, key, self.parse_list(value['Offset'])) #[float(i) for i in value['Offset']])
+                    elif key == 'cell_center_of_mass_x':
+                        setattr(self, key, self.parse_list(value['CenterOfMassX']))
+                    elif key == 'cell_center_of_mass_y':
+                        setattr(self, key, self.parse_list(value['CenterOfMassY']))
+                    elif key == 'ref_line_1_x':
+                        setattr(self, key, self.parse_list(value['RefLine1X']))
+                    elif key == 'ref_line_1_y':
+                        setattr(self, key, self.parse_list(value['RefLine1Y']))
+                    elif key == 'ref_line_2_x':
+                        setattr(self, key, self.parse_list(value['RefLine2X']))
+                    elif key == 'ref_line_2_y':
+                        setattr(self, key, self.parse_list(value['RefLine2Y']))
+                    else:
+                        setattr(self, key, yaml.safe_load(json.loads(json.dumps(value))))
+
                 except Exception as e:
                     print('Project settings error:', e)
 
             return "Project {} successfully opened".format(pathlib.Path(file_path).name)
         except Exception as e:
             return "Error during opening project: " + str(e)
+
+    @staticmethod
+    def parse_list(list_in):
+        """
+        Parses a list of string.
+        Args:
+            list_in (`list`)      List of strings.
+
+        Returns:
+            list_out (`list`):     Converted list of correct data type (float, nan).
+        """
+        list_out = []
+        for i in list_in:
+            if i == 'nan':
+                list_out.append(np.nan)
+            else:
+                list_out.append(float(i))
+        return list_out
 
     def write_pyimd_project(self, file_path):
         """
@@ -638,7 +875,7 @@ class Settings(object):
             # Add the SubElements
             general_settings = etree.SubElement(root, 'GeneralSettings')
             project_settings = etree.SubElement(root, 'ProjectSettings')
-            selected_files = etree.SubElement(project_settings, 'selected_files')
+
             # Add the SubSubElements for the general settings
             figure_format = etree.SubElement(general_settings, 'figure_format')
             figure_width = etree.SubElement(general_settings, 'figure_width')
@@ -671,6 +908,19 @@ class Settings(object):
             data_pre_start_with_cell = etree.SubElement(project_settings, 'pre_start_with_cell_path')
             data_measured = etree.SubElement(project_settings, 'measurements_path')
             calculation_mode = etree.SubElement(project_settings, 'calculation_mode')
+            selected_files = etree.SubElement(project_settings, 'selected_files')
+            image_files = etree.SubElement(project_settings, 'image_files')
+            cell_offsets = etree.SubElement(project_settings, 'cell_offsets')
+            cell_center_of_mass_x = etree.SubElement(project_settings, 'cell_center_of_mass_x')
+            cell_center_of_mass_y = etree.SubElement(project_settings, 'cell_center_of_mass_y')
+            ref_line_1_x = etree.SubElement(project_settings, 'ref_line_1_x')
+            ref_line_1_y = etree.SubElement(project_settings, 'ref_line_1_y')
+            ref_line_2_x = etree.SubElement(project_settings, 'ref_line_2_x')
+            ref_line_2_y = etree.SubElement(project_settings, 'ref_line_2_y')
+            image_start_index = etree.SubElement(project_settings, 'image_start_index')
+            position_correction_end_frame = etree.SubElement(project_settings, 'position_correction_end_frame')
+            number_of_data_per_frame = etree.SubElement(project_settings, 'number_of_data_per_frame')
+            is_zero_outside_correction_range = etree.SubElement(project_settings, 'is_zero_outside_correction_range')
 
             # Add the data
             figure_format.text = str(self.figure_format)
@@ -702,11 +952,45 @@ class Settings(object):
             data_pre_start_with_cell.text = str(self.pre_start_with_cell_path)
             data_measured.text = str(self.measurements_path)
             calculation_mode.text = str(self.calculation_mode)
+            image_start_index.text = str(self.image_start_index)
+            position_correction_end_frame.text = str(self.position_correction_end_frame)
+            number_of_data_per_frame.text = str(self.number_of_data_per_frame)
+            is_zero_outside_correction_range.text = str(self.is_zero_outside_correction_range)
 
             file_dict = {}
             for i in range(0, len(self.selected_files)):
                 file_dict["string{0}".format(i)] = etree.SubElement(selected_files, 'File')
                 file_dict["string{0}".format(i)].text = pathlib.Path(self.selected_files[i]).name
+
+            image_files_dict = {}
+            for i in range(0, len(self.image_files)):
+                image_files_dict["string{0}".format(i)] = etree.SubElement(image_files, 'File')
+                image_files_dict["string{0}".format(i)].text = self.image_files[i]
+
+            cell_offsets_dict = {}
+            cell_center_of_mass_x_dict = {}
+            cell_center_of_mass_y_dict= {}
+            ref_line_1_x_dict = {}
+            ref_line_1_y_dict = {}
+            ref_line_2_x_dict = {}
+            ref_line_2_y_dict = {}
+            for i in range(0, len(self.cell_offsets)):
+                cell_offsets_dict["string{0}".format(i)] = etree.SubElement(cell_offsets, 'Offset')
+                cell_offsets_dict["string{0}".format(i)].text = str(self.cell_offsets[i])
+                cell_center_of_mass_x_dict["string{0}".format(i)] = etree.SubElement(cell_center_of_mass_x,
+                                                                                     'CenterOfMassX')
+                cell_center_of_mass_x_dict["string{0}".format(i)].text = str(self.cell_center_of_mass_x[i])
+                cell_center_of_mass_y_dict["string{0}".format(i)] = etree.SubElement(cell_center_of_mass_y,
+                                                                                     'CenterOfMassY')
+                cell_center_of_mass_y_dict["string{0}".format(i)].text = str(self.cell_center_of_mass_y[i])
+                ref_line_1_x_dict["string{0}".format(i)] = etree.SubElement(ref_line_1_x, 'RefLine1X')
+                ref_line_1_x_dict["string{0}".format(i)].text = str(self.ref_line_1_x[i])
+                ref_line_1_y_dict["string{0}".format(i)] = etree.SubElement(ref_line_1_y, 'RefLine1Y')
+                ref_line_1_y_dict["string{0}".format(i)].text = str(self.ref_line_1_y[i])
+                ref_line_2_x_dict["string{0}".format(i)] = etree.SubElement(ref_line_2_x, 'RefLine2X')
+                ref_line_2_x_dict["string{0}".format(i)].text = str(self.ref_line_2_x[i])
+                ref_line_2_y_dict["string{0}".format(i)] = etree.SubElement(ref_line_2_y, 'RefLine2Y')
+                ref_line_2_y_dict["string{0}".format(i)].text = str(self.ref_line_2_y[i])
 
             # Check for correct file suffix. If not provided by user or wrong suffix given correct it
             if not pathlib.Path(file_path).suffix:

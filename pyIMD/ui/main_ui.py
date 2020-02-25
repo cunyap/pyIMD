@@ -16,10 +16,11 @@ import pathlib
 import ctypes
 import webbrowser
 import pyqtgraph as pg
+import pandas as pd
 from ast import literal_eval
 from PyQt5 import uic, QtWidgets, QtCore, QtGui
 from PyQt5.Qt import QFileDialog, QMessageBox, QApplication, QStyle, QTextCursor, QPushButton, QListWidget, QSize,\
-    QGraphicsSvgItem
+    QGraphicsSvgItem, Qt
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QSettings
 from pyIMD.analysis.curve_fit import fit_function
 from pyIMD.ui.settings import SettingsDialog
@@ -30,9 +31,8 @@ from concurrent.futures import ThreadPoolExecutor
 from pyIMD.ui.resource_path import resource_path
 from pyIMD.ui.help import QuickInstructions, ChangeLog, About
 from pyIMD.ui.tools import ConcatenateFiles
+from pyIMD.ui.p_corr import PositionCorrectionUI
 from pyIMD.__init__ import __version__, __operating_system__
-pg.setConfigOption('background', 'w')
-pg.setConfigOption('foreground', 'k')
 
 __author__ = 'Andreas P. Cuny'
 
@@ -89,6 +89,7 @@ class IMDWindow(QtWidgets.QMainWindow):
         self.about_window = None
         self.file_list = []
         self.current_batch_project_file = []
+        self.received_data = []
         self.last_selected_path = ''
         self.show()
         self.console_edit.setReadOnly(True)
@@ -168,14 +169,20 @@ class IMDWindow(QtWidgets.QMainWindow):
         self.actionSettings.setStatusTip('Configure pyIMD calculation settings')
         self.actionSettings.triggered.connect(self.show_settings_dialog)
 
-        tools_menu = self.menuBar.addMenu('Tools')
-        action_concat = tools_menu.addAction("Concatenate files")
+        #tools_menu = self.menuBar.addMenu('Tools')
+        #action_concat = tools_menu.addAction("Concatenate files")
         self.concatenation = ConcatenateFiles()
-        action_concat.triggered.connect(self.on_concatenation)
+        self.actionConcatenate_Files.triggered.connect(self.on_concatenation)
+
+        #action_position_correction = tools_menu.addAction("Correct cell position")
+        self.position_correction = PositionCorrectionUI()
+        self.actionPosition_correction.triggered.connect(self.on_position_correction)
+        self.setup_data_connection()
 
         self.about_window = About()
         self.actionAbout.setShortcut("Ctrl+A")
         self.actionAbout.triggered.connect(self.on_about)
+        # self.menuBar.setCornerWidget(self.menuAbout, corner=Qt.TopRightCorner)
 
         self.qi = QuickInstructions()
         self.actionQuick_instructions.setStatusTip('Hints about how to use this program')
@@ -201,6 +208,7 @@ class IMDWindow(QtWidgets.QMainWindow):
         self.graphicsView.addItem(self.imd_icon)
         self.graphicsView.hideAxis('bottom')
         self.graphicsView.hideAxis('left')
+        self.graphicsView.plotItem.getViewBox().setBackgroundColor((255, 255, 255))
 
         self.logger = self.get_logger_object(__name__)
         self.logger.setLevel(logging.INFO)
@@ -250,6 +258,15 @@ class IMDWindow(QtWidgets.QMainWindow):
             directory, time_interval, dialog_state = self.concatenation.get_user_input()
             if dialog_state:
                 self.executor.submit(self.imd.concatenate_files, directory, time_interval=time_interval)
+        except Exception as e:
+            self.print_to_console("Concatenation aborted by user: ")
+
+    def on_position_correction(self):
+        """
+        Opens position correction dialog in a new thread.
+        """
+        try:
+            self.executor.submit(self.position_correction.show())
         except Exception as e:
             self.print_to_console("Concatenation aborted by user: ")
 
@@ -445,6 +462,8 @@ class IMDWindow(QtWidgets.QMainWindow):
                 self.graphicsView.setLabel('bottom', 'Time (h)')
                 self.graphicsView.setLabel('left', 'Mass (ng)')
                 self.graphicsView.showGrid(x=True, y=True)
+                print(self.graphicsView.__dict__)
+                self.graphicsView.getViewBox.setBackgroundColor((255, 0, 0))
                 # Notify user about selection
                 self.print_to_console("Displaying: " + item.text())
             else:
@@ -596,6 +615,20 @@ class IMDWindow(QtWidgets.QMainWindow):
             self.imd.settings.pre_start_with_cell_path = self.withCellDataBox.currentText()
             self.imd.settings.measurements_path = self.measuredDataBox.currentText()
 
+            if len(self.received_data) > 0:
+                self.imd.settings.image_files = self.received_data["Image frames"].tolist()
+                self.imd.settings.cell_offsets = self.received_data["Tip offset"].tolist()
+                self.imd.settings.cell_center_of_mass_x = self.received_data["Centroid x"].tolist()
+                self.imd.settings.cell_center_of_mass_y = self.received_data["Centroid y"].tolist()
+                self.imd.settings.ref_line_1_x = self.received_data["Ref point2 x"].tolist()
+                self.imd.settings.ref_line_1_y = self.received_data["Ref point1 y"].tolist()
+                self.imd.settings.ref_line_2_x = self.received_data["Ref point2 x"].tolist()
+                self.imd.settings.ref_line_2_y = self.received_data["Ref point2 y"].tolist()
+                self.imd.settings.image_start_index = self.image_start_index
+                self.imd.settings.position_correction_end_frame = self.position_correction_end_frame
+                self.imd.settings.number_of_data_per_frame = self.number_of_data_per_frame
+                self.imd.settings.is_zero_outside_correction_range = self.is_zero_outside_correction_range
+
         except Exception as e:
             self.print_to_console("Error during settings synchronization: " + str(e))
 
@@ -604,6 +637,12 @@ class IMDWindow(QtWidgets.QMainWindow):
         Set up the console connection between the settings and the main window.
         """
         self.settings_dialog.send_to_console_signal.connect(self.handle_change_console_text)
+
+    def setup_data_connection(self):
+        """
+        Set up the connection between the position correction window and the main window.
+        """
+        self.position_correction.save_to_main_signal.connect(self.handle_received_data)
 
     def print_to_console(self, text):
         """
@@ -624,6 +663,24 @@ class IMDWindow(QtWidgets.QMainWindow):
         """
         self.print_to_console(text)
 
+    @pyqtSlot(object, int, int, int, bool, name="handle_received_data")
+    def handle_received_data(self, data, start_idx, end_idx, interval, condition):
+        """
+        Implementation of the handle_received_data slot.
+
+        Args:
+            data (`PandasDataframe`):       Data as pandas data frame received from Position Correction instance.
+        """
+        print(data, start_idx, end_idx, interval, condition)
+        self.received_data = data
+        self.image_start_index = start_idx
+        self.position_correction_end_frame = end_idx
+        self.number_of_data_per_frame =interval
+        self.is_zero_outside_correction_range = condition
+        self.sync_settings()
+        print(self.imd.settings.__dict__)
+        print(self.imd.settings.cell_center_of_mass_x)
+
     def save_project(self):
         """
         Saves a pyIMD project file as .xml using the IntertialMassDetermination.save_pyimd_project method
@@ -634,13 +691,15 @@ class IMDWindow(QtWidgets.QMainWindow):
 
         file_dialog = QFileDialog()
         project_file_dir = file_dialog.getSaveFileName(self)
-
+        print(project_file_dir)
         if len(project_file_dir[0]) > 0:
             try:
                 # Make sure all ui settings are in sync with imd settings.
+                print('berfore sync')
                 self.sync_settings()
-
+                print('before save')
                 self.imd.save_pyimd_project(project_file_dir[0])
+                print('after save')
 
                 self.print_to_console("Project saved successfully")
             except Exception as e:
@@ -668,7 +727,6 @@ class IMDWindow(QtWidgets.QMainWindow):
             try:
                 # Load pyimd project
                 self.imd.load_pyimd_project(selected_project_file[0])
-
                 # Update ui.Settings with parameters:
                 self.__settings = {"figure_format": self.imd.settings.figure_format,
                                    "figure_width": self.imd.settings.figure_width,
@@ -696,7 +754,6 @@ class IMDWindow(QtWidgets.QMainWindow):
                                    "text_data_delimiter": self.imd.settings.text_data_delimiter}
                 self.settings_dialog.__init__(self.__settings)
                 self.settings_dialog.set_values()
-
                 # Update ui with loaded data:
                 self.last_selected_path = self.imd.settings.project_folder_path.replace("\\", "/")
 
@@ -729,6 +786,20 @@ class IMDWindow(QtWidgets.QMainWindow):
                     radio_name = getattr(self, self.radio_btn_name_array[i])
                     if radio_name.text() == self.imd.settings.calculation_mode:
                         radio_name.setChecked(True)
+
+                if len(self.imd.settings.image_files) > 0:
+                    data = []
+                    for i in range(0, len(self.imd.settings.cell_offsets)):
+                        data.append([i, self.imd.settings.cell_offsets[i], self.imd.settings.cell_center_of_mass_x[i],
+                                self.imd.settings.cell_center_of_mass_y[i], self.imd.settings.ref_line_1_x[i],
+                                self.imd.settings.ref_line_1_y[i], self.imd.settings.ref_line_2_x[i],
+                                self.imd.settings.ref_line_2_y[i]])
+                        df = pd.DataFrame(data, columns=['Image frame', 'Tip offset', 'Centroid x', 'Centroid y',
+                                                         'Ref point1 x', 'Ref point1 y', 'Ref point2 x', 'Ref point2 y'])
+                    self.executor.submit(self.position_correction.load_project(
+                        self.imd.settings.image_files, df, self.imd.settings.image_start_index,
+                        self.imd.settings.position_correction_end_frame, self.imd.settings.number_of_data_per_frame,
+                        self.imd.settings.is_zero_outside_correction_range))
 
                 self.print_to_console("Project {} successfully opened".format(pathlib.Path(
                     selected_project_file[0]).name))

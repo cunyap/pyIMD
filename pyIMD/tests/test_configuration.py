@@ -44,7 +44,11 @@ class TestConfiguration(TestCase):
                            '_figure_plot_every_nth_point': 1, '_initial_parameter_guess': [70.0, 2.0, 0.0, 0.0],
                            '_upper_parameter_bounds': [100.0, 5.0, 3, 3], '_figure_format': 'png',
                            '_lower_parameter_bounds': [10.0, 1.0, -3, -3], '_text_data_delimiter': '\t',
-                           '_figure_name_pre_start_no_cell': 'FitNoCellData'}
+                           '_figure_name_pre_start_no_cell': 'FitNoCellData', '_image_files': [],  '_cell_offsets': [],
+                           '_cell_center_of_mass_x': [], '_cell_center_of_mass_y': [], '_ref_line_1_x': [],
+                           '_ref_line_1_y': [], '_ref_line_2_x': [], '_ref_line_2_y': [], '_image_start_index': 0,
+                           '_position_correction_end_frame': 0, '_number_of_data_per_frame': 0,
+                           '_is_zero_outside_correction_range': True}
 
         self.assertEqual(self.settings.__dict__, expected_result)
 
@@ -72,7 +76,11 @@ class TestConfiguration(TestCase):
                                                                                               "20190110_ShowCase_PLL_B.txt"),
                            '_read_text_data_from_line': 23,
                            '_figure_name_pre_start_no_cell': 'FitNoCellData', '_text_data_delimiter': '\\t',
-                           '_spring_constant': 8, '_figure_format': 'pdf', '_cell_position': 9.5, '_figure_height': 20}
+                           '_spring_constant': 8, '_figure_format': 'pdf', '_cell_position': 9.5, '_figure_height': 20,
+                           '_image_files': [], '_cell_offsets': [], '_cell_center_of_mass_x': [],
+                           '_cell_center_of_mass_y': [], '_ref_line_1_x': [], '_ref_line_1_y': [], '_ref_line_2_x': [],
+                           '_ref_line_2_y': [], '_image_start_index': 0, '_position_correction_end_frame': 0,
+                           '_number_of_data_per_frame': 0, '_is_zero_outside_correction_range': True}
 
         print(os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_B.txt"))
         file_path1 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_B.txt")
@@ -110,7 +118,11 @@ class TestConfigurationIO(XmlTestCase):
                                                                                               "20190110_ShowCase_PLL_B.txt"),
                            '_read_text_data_from_line': 23,
                            '_figure_name_pre_start_no_cell': 'FitNoCellData', '_text_data_delimiter': '\\t',
-                           '_spring_constant': 8, '_figure_format': 'pdf', '_cell_position': 9.5, '_figure_height': 20}
+                           '_spring_constant': 8, '_figure_format': 'pdf', '_cell_position': 9.5, '_figure_height': 20,
+                           '_image_files': [], '_cell_offsets': [], '_cell_center_of_mass_x': [],
+                           '_cell_center_of_mass_y': [], '_ref_line_1_x': [], '_ref_line_1_y': [], '_ref_line_2_x': [],
+                           '_ref_line_2_y': [], '_image_start_index': 0, '_position_correction_end_frame': 0,
+                           '_number_of_data_per_frame': 0, '_is_zero_outside_correction_range': True}
 
         file_path1 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_B.txt")
         file_path2 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_A.txt")
@@ -194,7 +206,10 @@ class TestConfigurationIO(XmlTestCase):
                            '_frequency_offset': 0, '_pre_start_no_cell_path': '', '_read_text_data_from_line': 23,
                            '_figure_name_pre_start_no_cell': 'FitNoCellData', '_text_data_delimiter': '\t',
                            '_spring_constant': 4.0, '_figure_format': 'pdf', '_cell_position': 5, '_figure_height':
-                               45.16}
+                               45.16, '_image_files': [], '_cell_offsets': [], '_cell_center_of_mass_x': [],
+                           '_cell_center_of_mass_y': [], '_ref_line_1_x': [], '_ref_line_1_y': [], '_ref_line_2_x': [],
+                           '_ref_line_2_y': [], '_image_start_index': 0, '_position_correction_end_frame': 0,
+                           '_number_of_data_per_frame': 0, '_is_zero_outside_correction_range': True}
 
         self.assertEqual(settings.__dict__, expected_result)
 

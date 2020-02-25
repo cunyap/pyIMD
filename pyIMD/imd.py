@@ -27,6 +27,7 @@ import sys
 import logging
 from tqdm import trange
 import numpy as np
+import pandas as pd
 
 __author__ = 'Andreas P. Cuny'
 
@@ -140,6 +141,27 @@ class InertialMassDetermination(QObject):
              cell_position (`float`):                 Cell position offset from cantilever tip in microns
              project_folder_path (`str`):             Path to project data files. Also used to store pyIMD results such
                                                       as data and figures.
+             image_files (`list`):                    List of strings with image file name paths used for cell position
+                                                      offset determination.
+             cell_offsets (`list`):                   List of cell position offsets for the given image series in
+                                                      image_files.
+             cell_center_of_mass_x (`list`):          List of cell center of mass x components for the given image series
+                                                      in image_files.
+             cell_center_of_mass_y (`list`):          List of cell center of mass y components for the given image series
+                                                      in image_files.
+             ref_line_1_x (`list`):                   List of reference line point 1 x components for the given image
+                                                      series in image_files.
+             ref_line_1_y (`list`):                   List of reference line point 1 y components for the given image
+                                                      series in image_files.
+             ref_line_2_x (`list`):                   List of reference line point 2 x components for the given image
+                                                      series in image_files.
+             ref_line_2_y (`list`):                   List of reference line point 2 y components for the given image
+                                                      series in image_files.
+             image_start_index (`int`):               Measured data index which corresponds to first image frame
+             position_correction_end_frame (`int`):   Image frame until which the position should be computed
+             number_of_data_per_frame (`int`):        Number of measurement points between two image frames.
+             is_zero_outside_correction_range (`bool`):Bool determining if data will be set to zero outside of position
+                                                     corrected range
         """
         try:
             self.settings.new_pyimd_project(pre_start_no_cell_path, pre_start_with_cell_path, measurements_path,
@@ -201,158 +223,196 @@ class InertialMassDetermination(QObject):
             self.result_folder = self.settings.project_folder_path
             # Read data
             self.logger.info('Start reading all files')
-            self.data_pre_start_no_cell = read_from_text(self.settings.pre_start_no_cell_path,
-                                                         self.settings.text_data_delimiter,
-                                                         self.settings.read_text_data_from_line)
-            self.data_pre_start_with_cell = read_from_text(self.settings.pre_start_with_cell_path,
-                                                           self.settings.text_data_delimiter,
-                                                           self.settings.read_text_data_from_line)
-            self.data_measured = read_from_file(self.settings.measurements_path, self.settings.text_data_delimiter)
-            self.logger.info('Done reading all files')
-            # Convert data to the correct units
-            self.convert_data()
-            self.logger.info('Done converting units')
+            try:
+                self.data_pre_start_no_cell = read_from_text(self.settings.pre_start_no_cell_path,
+                                                             self.settings.text_data_delimiter,
+                                                             self.settings.read_text_data_from_line)
+                self.data_pre_start_with_cell = read_from_text(self.settings.pre_start_with_cell_path,
+                                                               self.settings.text_data_delimiter,
+                                                               self.settings.read_text_data_from_line)
+                self.data_measured = read_from_file(self.settings.measurements_path, self.settings.text_data_delimiter)
+                self.logger.info('Done reading all files')
+                # Convert data to the correct units
+                self.convert_data()
+                self.logger.info('Done converting units')
 
-            # Calc resonance frequency for pre start data without cell attached to cantilever
-            self.resonance_freq_pre_start_no_cell, self.fit_param_pre_start_no_cell = calculate_resonance_frequencies(
-                self.data_pre_start_no_cell.iloc[:, 0], self.data_pre_start_no_cell.iloc[:, 2],
-                self.settings.initial_parameter_guess, self.settings.lower_parameter_bounds,
-                self.settings.upper_parameter_bounds)
+                # Calc resonance frequency for pre start data without cell attached to cantilever
+                self.resonance_freq_pre_start_no_cell, self.fit_param_pre_start_no_cell = calculate_resonance_frequencies(
+                    self.data_pre_start_no_cell.iloc[:, 0], self.data_pre_start_no_cell.iloc[:, 2],
+                    self.settings.initial_parameter_guess, self.settings.lower_parameter_bounds,
+                    self.settings.upper_parameter_bounds)
 
-            figure_pre_start_no_cell = plot_fitting(self.data_pre_start_no_cell.iloc[:, 0],
-                                                    self.data_pre_start_no_cell.iloc[:, 2],
-                                                    self.resonance_freq_pre_start_no_cell,
-                                                    self.fit_param_pre_start_no_cell)
+                figure_pre_start_no_cell = plot_fitting(self.data_pre_start_no_cell.iloc[:, 0],
+                                                        self.data_pre_start_no_cell.iloc[:, 2],
+                                                        self.resonance_freq_pre_start_no_cell,
+                                                        self.fit_param_pre_start_no_cell)
 
-            optional_fig_param = {'width': self.settings.figure_width, 'height': self.settings.figure_height,
-                                  'units': self.settings.figure_units,
-                                  'resolution': self.settings.figure_resolution_dpi}
+                optional_fig_param = {'width': self.settings.figure_width, 'height': self.settings.figure_height,
+                                      'units': self.settings.figure_units,
+                                      'resolution': self.settings.figure_resolution_dpi}
 
-            write_to_disk_as(self.settings.figure_format, figure_pre_start_no_cell,
-                             '{}'.format(self.result_folder + os.sep + self.settings.figure_name_pre_start_no_cell),
-                             **optional_fig_param)
-            self.logger.info('Done with pre start no cell resonance frequency calculation')
-
-            # Calc position correction for cell attached to cantilever
-            self.position_correction_factor = calculate_position_correction(self.settings.cell_position,
-                                                                            self.settings.cantilever_length)
-            self.logger.info('Position correction factor: {}'.format(self.position_correction_factor))
-
-            # Calc resonance frequency for pre start data with cell attached to cantilever
-            self.resonance_freq_pre_start_with_cell, self.fit_param_pre_start_with_cell = \
-                calculate_resonance_frequencies(self.data_pre_start_with_cell.iloc[:, 0],
-                                                self.data_pre_start_with_cell.iloc[:, 2],
-                                                self.settings.initial_parameter_guess,
-                                                self.settings.lower_parameter_bounds,
-                                                self.settings.upper_parameter_bounds)
-
-            figure_pre_start_with_cell = plot_fitting(self.data_pre_start_with_cell.iloc[:, 0],
-                                                      self.data_pre_start_with_cell.iloc[:, 2],
-                                                      self.resonance_freq_pre_start_with_cell,
-                                                      self.fit_param_pre_start_with_cell)
-
-            write_to_disk_as(self.settings.figure_format, figure_pre_start_with_cell,
-                             '{}'.format(self.result_folder + os.sep + self.settings.figure_name_pre_start_with_cell),
-                             **optional_fig_param)
-            self.logger.info('Done with pre start with cell resonance frequency calculation')
-
-            fig = plot_response_shift(self.data_pre_start_no_cell.iloc[:, 0], self.data_pre_start_no_cell.iloc[:, 2],
-                                      self.resonance_freq_pre_start_no_cell, self.fit_param_pre_start_no_cell,
-                                       self.data_pre_start_with_cell.iloc[:, 0], self.data_pre_start_with_cell.iloc[:, 2],
-                                      self.resonance_freq_pre_start_with_cell, self.fit_param_pre_start_with_cell)
-
-            write_to_disk_as(self.settings.figure_format, fig,
-                             '{}'.format(self.result_folder + os.sep + 'PreStartFrequencyShift'), **optional_fig_param)
-            self.logger.info('Done with pre start frequency shift figure generation')
-            if self.settings.calculation_mode == 'Cont.Sweep':
-                # The continuous sweep mode
-                self.calculated_cell_mass = []
-                for iSweep in trange(0, len(self.data_measured), 3):
-                    # Calc resonance frequency and function fit for the ith sweep (iSweep)
-                    res_freq, param = calculate_resonance_frequencies(self.data_measured.iloc[iSweep + 2, 0:255],
-                                                                      self.data_measured.iloc[iSweep + 1, 0:255],
-                                                                      self.settings.initial_parameter_guess,
-                                                                      self.settings.lower_parameter_bounds,
-                                                                      self.settings.upper_parameter_bounds)
-                    # Calculate the mass for the ith sweep (iSweep)
-                    # @todo append self.resonance_freq_pre_start_with_cell to the list self.calculated_cell_mass first!
-                    mass = calculate_mass(self.settings.spring_constant, res_freq, self.resonance_freq_pre_start_no_cell)
-                    # Store results in a list
-                    self.resonance_freq_measured.append(res_freq)
-                    self.fit_param_measured.append(param)
-                    self.calculated_cell_mass.append(mass * self.position_correction_factor)
-
-                    if np.remainder(iSweep, 300) == 0:
-                        figure_i_sweep = plot_fitting(self.data_measured.iloc[iSweep + 2, 0:255],
-                                                      self.data_measured.iloc[iSweep + 1, 0:255], res_freq, param)
-                        write_to_disk_as(self.settings.figure_format, figure_i_sweep,
-                                         '{}'.format(self.result_folder + os.sep + 'ResFreqSweep_' + str(iSweep)))
-
-                calculated_cell_mass = concat([(self.data_measured.iloc[0:int(((len(self.data_measured)) / 3)-1), 256] -
-                                                self.data_measured.iloc[0, 256]) / 3600,
-                                               DataFrame(self.calculated_cell_mass, columns=['Mass (ng)'])], axis=1)
-                calculated_cell_mass['Mean mass (ng)'] = calculated_cell_mass['Mass (ng)'].rolling(
-                    window=self.settings.rolling_window_size).mean()
-
-                self.calculated_cell_mass = calculated_cell_mass
-                figure_cell_mass = plot_mass(calculated_cell_mass, self.settings.figure_plot_every_nth_point)
-                self.logger.info('Start writing figure to disk')
-                write_to_disk_as(self.settings.figure_format, figure_cell_mass,
-                                 '{}'.format(self.result_folder + os.sep + self.settings.figure_name_measured_data),
+                write_to_disk_as(self.settings.figure_format, figure_pre_start_no_cell,
+                                 '{}'.format(self.result_folder + os.sep + self.settings.figure_name_pre_start_no_cell),
                                  **optional_fig_param)
-                self.logger.info('Done writing figure to disk')
-                self.logger.info('Start writing data to disk')
-                calculated_cell_mass.to_csv(self.result_folder + os.sep +
-                                            self.settings.figure_name_measured_data + '.csv', index=False, na_rep="nan")
-                self.calculated_cell_mass = calculated_cell_mass
-                self.logger.info('Done writing data to disk')
+                self.logger.info('Done with pre start no cell resonance frequency calculation')
 
-            else:
-                # The PLL mode
-                # Add resonance_freq_pre_start_with_cell to measured resonance frequency delta
-                # Calculate the mass
-                self.calculated_cell_mass = []
-                if self.settings.correct_for_frequency_offset:
-                    if self.settings.frequency_offset_mode == 'Auto':
-                        # Calc auto frequency offset by averaging the first n measurement data points and save this
-                        # offset value found.
-                        n = int(self.settings.frequency_offset_n_measurements_used)
+                # Calc position correction for cell attached to cantilever
+                if len(self.settings.cell_offsets) == 0:
+                    self.position_correction_factor = calculate_position_correction(self.settings.cell_position,
+                                                                                    self.settings.cantilever_length)
+                    self.logger.info('Position correction factor: {}'.format(self.position_correction_factor))
+                else:
+                    # Interpolated according to data
+                    pos_data = pd.DataFrame(np.linspace(1, len(self.settings.cell_offsets),
+                                                            len(self.settings.cell_offsets)), columns={'frames'})
+                    pos_data['offsets'] = self.settings.cell_offsets
+                    print(pos_data)
+                    pos_data['indices'] = ((pos_data['frames'] - 1) * self.settings.number_of_data_per_frame) + \
+                                         self.settings.image_start_index
+                    print(pos_data)
+                    max_frame = pos_data['indices'].iloc[-1]
+                    print(max_frame)
+                    new_x = np.linspace(self.settings.image_start_index, max_frame, (max_frame-
+                                                                                     self.settings.image_start_index) +1)
+                    interp_offsets = np.interp(new_x, pos_data['indices'], pos_data['offsets'])
+                    if self.settings.is_zero_outside_correction_range:
+                        position_correction_factor = np.zeros(len(self.data_measured))
+                    else:
+                        position_correction_factor = np.ones(len(self.data_measured))
+                    interp_offsets_corrected = calculate_position_correction(interp_offsets,
+                                                                             self.settings.cantilever_length)
+                    print(interp_offsets_corrected)
+                    print('len data', len(self.data_measured))
+                    print('len interp offset corrected', len(interp_offsets_corrected))
+                    print('from', int(self.settings.image_start_index))
+                    print('to', int(max_frame +self.settings.image_start_index))
+                    position_correction_factor[int(self.settings.image_start_index):int(max_frame + 1)] = \
+                        interp_offsets_corrected
+                    self.position_correction_factor = position_correction_factor
+                    print(position_correction_factor[296])
+                    print('done with pos correction')
 
-                        auto_freq_offset = np.mean(self.data_measured.iloc[0:n, 6])
-                        self.logger.info('Offset calculation result: {}'.format(auto_freq_offset))
-                        self.settings.frequency_offset = auto_freq_offset
+                # Calc resonance frequency for pre start data with cell attached to cantilever
+                self.resonance_freq_pre_start_with_cell, self.fit_param_pre_start_with_cell = \
+                    calculate_resonance_frequencies(self.data_pre_start_with_cell.iloc[:, 0],
+                                                    self.data_pre_start_with_cell.iloc[:, 2],
+                                                    self.settings.initial_parameter_guess,
+                                                    self.settings.lower_parameter_bounds,
+                                                    self.settings.upper_parameter_bounds)
 
-                for iPLL in trange(0, len(self.data_measured)):
+                figure_pre_start_with_cell = plot_fitting(self.data_pre_start_with_cell.iloc[:, 0],
+                                                          self.data_pre_start_with_cell.iloc[:, 2],
+                                                          self.resonance_freq_pre_start_with_cell,
+                                                          self.fit_param_pre_start_with_cell)
+
+                write_to_disk_as(self.settings.figure_format, figure_pre_start_with_cell,
+                                 '{}'.format(self.result_folder + os.sep + self.settings.figure_name_pre_start_with_cell),
+                                 **optional_fig_param)
+                self.logger.info('Done with pre start with cell resonance frequency calculation')
+
+                fig = plot_response_shift(self.data_pre_start_no_cell.iloc[:, 0], self.data_pre_start_no_cell.iloc[:, 2],
+                                          self.resonance_freq_pre_start_no_cell, self.fit_param_pre_start_no_cell,
+                                          self.data_pre_start_with_cell.iloc[:, 0], self.data_pre_start_with_cell.iloc[:, 2],
+                                          self.resonance_freq_pre_start_with_cell, self.fit_param_pre_start_with_cell)
+
+                write_to_disk_as(self.settings.figure_format, fig,
+                                 '{}'.format(self.result_folder + os.sep + 'PreStartFrequencyShift'), **optional_fig_param)
+                self.logger.info('Done with pre start frequency shift figure generation')
+                if self.settings.calculation_mode == 'Cont.Sweep':
+                    # The continuous sweep mode
+                    self.calculated_cell_mass = []
+                    for iSweep in trange(0, len(self.data_measured), 3):
+                        # Calc resonance frequency and function fit for the ith sweep (iSweep)
+                        res_freq, param = calculate_resonance_frequencies(self.data_measured.iloc[iSweep + 2, 0:255],
+                                                                          self.data_measured.iloc[iSweep + 1, 0:255],
+                                                                          self.settings.initial_parameter_guess,
+                                                                          self.settings.lower_parameter_bounds,
+                                                                          self.settings.upper_parameter_bounds)
+                        # Calculate the mass for the ith sweep (iSweep)
+                        mass = calculate_mass(self.settings.spring_constant, res_freq, self.resonance_freq_pre_start_no_cell)
+                        # Store results in a list
+                        self.resonance_freq_measured.append(res_freq)
+                        self.fit_param_measured.append(param)
+                        if len(self.settings.cell_offsets) == 0:
+                            self.calculated_cell_mass.append(mass * self.position_correction_factor)
+                        else:
+                            self.calculated_cell_mass.append(mass * self.position_correction_factor[iSweep])
+
+                        if np.remainder(iSweep, 300) == 0:
+                            figure_i_sweep = plot_fitting(self.data_measured.iloc[iSweep + 2, 0:255],
+                                                          self.data_measured.iloc[iSweep + 1, 0:255], res_freq, param)
+                            write_to_disk_as(self.settings.figure_format, figure_i_sweep,
+                                             '{}'.format(self.result_folder + os.sep + 'ResFreqSweep_' + str(iSweep)))
+
+                    calculated_cell_mass = concat([(self.data_measured.iloc[0:int(((len(self.data_measured)) / 3)-1), 256] -
+                                                    self.data_measured.iloc[0, 256]) / 3600,
+                                                   DataFrame(self.calculated_cell_mass, columns=['Mass (ng)'])], axis=1)
+                    calculated_cell_mass['Mean mass (ng)'] = calculated_cell_mass['Mass (ng)'].rolling(
+                        window=self.settings.rolling_window_size).mean()
+
+                    self.calculated_cell_mass = calculated_cell_mass
+                    figure_cell_mass = plot_mass(calculated_cell_mass, self.settings.figure_plot_every_nth_point)
+                    self.logger.info('Start writing figure to disk')
+                    write_to_disk_as(self.settings.figure_format, figure_cell_mass,
+                                     '{}'.format(self.result_folder + os.sep + self.settings.figure_name_measured_data),
+                                     **optional_fig_param)
+                    self.logger.info('Done writing figure to disk')
+                    self.logger.info('Start writing data to disk')
+                    calculated_cell_mass.to_csv(self.result_folder + os.sep +
+                                                self.settings.figure_name_measured_data + '.csv', index=False, na_rep="nan")
+                    self.calculated_cell_mass = calculated_cell_mass
+                    self.logger.info('Done writing data to disk')
+
+                else:
+                    # The PLL mode
+                    # Calculate the mass
+                    self.calculated_cell_mass = []
                     if self.settings.correct_for_frequency_offset:
-                            mass = calculate_mass(self.settings.spring_constant, (self.data_measured.iloc[iPLL, 6] -
-                                                                                  self.settings.frequency_offset) +
+                        if self.settings.frequency_offset_mode == 'Auto':
+                            # Calc auto frequency offset by averaging the first n measurement data points and save this
+                            # offset value found.
+                            n = int(self.settings.frequency_offset_n_measurements_used)
+
+                            auto_freq_offset = np.mean(self.data_measured.iloc[0:n, 6])
+                            self.logger.info('Offset calculation result: {}'.format(auto_freq_offset))
+                            self.settings.frequency_offset = auto_freq_offset
+
+                    for iPLL in trange(0, len(self.data_measured)):
+                        if self.settings.correct_for_frequency_offset:
+                                mass = calculate_mass(self.settings.spring_constant, (self.data_measured.iloc[iPLL, 6] -
+                                                                                      self.settings.frequency_offset) +
+                                                      self.resonance_freq_pre_start_with_cell,
+                                                      self.resonance_freq_pre_start_no_cell)
+                        else:
+                            mass = calculate_mass(self.settings.spring_constant, self.data_measured.iloc[iPLL, 6] +
                                                   self.resonance_freq_pre_start_with_cell,
                                                   self.resonance_freq_pre_start_no_cell)
-                    else:
-                        mass = calculate_mass(self.settings.spring_constant, self.data_measured.iloc[iPLL, 6] +
-                                              self.resonance_freq_pre_start_with_cell,
-                                              self.resonance_freq_pre_start_no_cell)
 
-                    self.calculated_cell_mass.append(mass * self.position_correction_factor)
+                        if len(self.settings.cell_offsets) == 0:
+                            self.calculated_cell_mass.append(mass * self.position_correction_factor)
+                        else:
+                            self.calculated_cell_mass.append(mass * self.position_correction_factor[iPLL])
 
-                calculated_cell_mass = concat([(self.data_measured.iloc[:, 0] - self.data_measured.iloc[1, 0]) / 3600,
-                                               DataFrame(self.calculated_cell_mass, columns=['Mass (ng)'])], axis=1)
-                calculated_cell_mass['Mean mass (ng)'] = calculated_cell_mass['Mass (ng)'].rolling(
-                    window=self.settings.rolling_window_size).mean()
-                self.calculated_cell_mass = calculated_cell_mass
+                    calculated_cell_mass = concat([(self.data_measured.iloc[:, 0] - self.data_measured.iloc[1, 0]) / 3600,
+                                                   DataFrame(self.calculated_cell_mass, columns=['Mass (ng)'])], axis=1)
+                    calculated_cell_mass['Mean mass (ng)'] = calculated_cell_mass['Mass (ng)'].rolling(
+                        window=self.settings.rolling_window_size).mean()
+                    self.calculated_cell_mass = calculated_cell_mass
 
-                figure_cell_mass = plot_mass(calculated_cell_mass, self.settings.figure_plot_every_nth_point)
-                self.logger.info('Start writing figure to disk')
-                write_to_disk_as(self.settings.figure_format, figure_cell_mass,
-                                 '{}'.format(self.result_folder + os.sep + self.settings.figure_name_measured_data),
-                                 **optional_fig_param)
-                self.logger.info('Done writing figure to disk')
-                self.logger.info('Start writing data to disk')
-                calculated_cell_mass.to_csv(self.result_folder + os.sep +
-                                            self.settings.figure_name_measured_data + '.csv', index=False, na_rep="nan")
-                self.logger.info('Done writing data to disk')
+                    figure_cell_mass = plot_mass(calculated_cell_mass, self.settings.figure_plot_every_nth_point)
+                    self.logger.info('Start writing figure to disk')
+                    write_to_disk_as(self.settings.figure_format, figure_cell_mass,
+                                     '{}'.format(self.result_folder + os.sep + self.settings.figure_name_measured_data),
+                                     **optional_fig_param)
+                    self.logger.info('Done writing figure to disk')
+                    self.logger.info('Start writing data to disk')
+                    calculated_cell_mass.to_csv(self.result_folder + os.sep +
+                                                self.settings.figure_name_measured_data + '.csv', index=False, na_rep="nan")
+                    self.logger.info('Done writing data to disk')
 
-            self.logger.info('Done with all calculations')
+                self.logger.info('Done with all calculations')
+            except Exception as e:
+                self.logger.info('Error {}'.format(e))
 
         else:
             self.logger.info('No valid pyIMD configuration found. Please create or load a pyIMD project first.')
