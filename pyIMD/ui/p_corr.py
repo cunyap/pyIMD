@@ -72,7 +72,7 @@ class PositionCorrectionUI(QMainWindow):
         super(PositionCorrectionUI, self).__init__()
 
         #uic.loadUi(resource_path(os.path.join('ui\\positioncorrectionui\\positioncorrectionui.ui')), self)
-        uic.loadUi(resource_path(os.path.join('ui\\positioncorrectionui\\positioncorrectionui.ui')), self)
+        uic.loadUi(resource_path(os.path.join('ui\\positioncorrectionui.ui')), self)
 
         self.setWindowTitle('pyIMD :: Position Correction')
         self.draw_reference_line_action = QAction(QIcon(resource_path('scratch_space\\Icons-01.png')), 'Draw new cantilever tip reference line', self)
