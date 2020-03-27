@@ -22,10 +22,10 @@ from PyQt5.Qt import QValidator, QDoubleValidator, QRegExpValidator, QStyle, QDi
 from PyQt5.QtWidgets import QShortcut, QToolBar, QAction, QFileDialog, QProgressBar, QMessageBox
 from pyIMD.configuration.defaults import *
 from pyIMD.ui.resource_path import resource_path
-from pyIMD.ui.WellItemRect import WellItemRect
-from pyIMD.ui.custom_tree_item import WellItem, ReferencePointTreeItem
-from pyIMD.ui.graphics_scene import GraphicScene
-from pyIMD.ui.reference_point import CenterOfMassPoint
+# from pyIMD.ui.WellItemRect import WellItemRect
+# from pyIMD.ui.custom_tree_item import WellItem, ReferencePointTreeItem
+# from pyIMD.ui.graphics_scene import GraphicScene
+# from pyIMD.ui.reference_point import CenterOfMassPoint
 # from pyCAME.ui.well_table_model import WellTableModel
 # from pyIMD.ui.WellItemRect import WellItemRect
 # from pyIMD.ui.app_event_filter import AppEventFilter
@@ -36,7 +36,7 @@ from skimage.io import imread
 from skimage.color import rgb2gray
 import pyqtgraph as pg
 from pyIMD.ui.graphics_items import ReferenceLine, CellShapeOutline
-from pyIMD.ui.reference_point import ReferencePoint
+# from pyIMD.ui.reference_point import ReferencePoint
 from pyIMD.analysis.calculations import calculate_center_of_mass
 from skimage import exposure
 from skimage.morphology import disk
