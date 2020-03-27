@@ -7,7 +7,7 @@
 block_cipher = None
 
 a = Analysis(['C:\\Users\\localadmin\\ownCloud\\SoftwareDev\\Python\\pyIMD\\pyIMD\\main.py'],
-             pathex=['C:\\Python35-3-3-64\\lib\\site-packages\\PyQt5\\Qt\\bin', 'C:\\Python35-3-3-64\\Scripts'],
+             pathex=['C:\\Users\\localadmin\\miniconda3\\lib\\site-packages\\PyQt5\\Qt\\bin', 'C:\\users\\localadmin\\miniconda3\\Scripts'],
              binaries=[],
              datas=[],
              hiddenimports=["tkinter", "tkinter.filedialog", "pandas._libs.tslibs.np_datetime","pandas._libs.tslibs.nattype","pandas._libs.skiplist", 
@@ -36,8 +36,8 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           name='pyIMD',
-          debug=False,
+          debug=True,
           strip=False,
           upx=True,
-          console=False,
+          console=True,
 		  icon='C:\\Users\\localadmin\\ownCloud\\SoftwareDev\\Python\\pyIMD\\pyIMD\\ui\\icons\\pyIMD_logo_icon.ico')

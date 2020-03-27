@@ -27,7 +27,7 @@ from pyIMD.ui.custom_tree_item import WellItem, ReferencePointTreeItem
 from pyIMD.ui.graphics_scene import GraphicScene
 from pyIMD.ui.reference_point import CenterOfMassPoint
 # from pyCAME.ui.well_table_model import WellTableModel
-from pyIMD.ui.WellItemRect import WellItemRect
+# from pyIMD.ui.WellItemRect import WellItemRect
 # from pyIMD.ui.app_event_filter import AppEventFilter
 from functools import partial
 from enum import Enum
