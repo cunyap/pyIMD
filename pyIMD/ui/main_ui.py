@@ -31,7 +31,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pyIMD.ui.resource_path import resource_path
 from pyIMD.ui.help import QuickInstructions, ChangeLog, About
 from pyIMD.ui.tools import ConcatenateFiles
-from pyIMD.ui.p_corr import PositionCorrectionUI
+from pyIMD.ui.poscorrection.position_correction import PositionCorrectionUI
 from pyIMD.__init__ import __version__, __operating_system__
 
 __author__ = 'Andreas P. Cuny'
@@ -675,7 +675,7 @@ class IMDWindow(QtWidgets.QMainWindow):
         self.received_data = data
         self.image_start_index = start_idx
         self.position_correction_end_frame = end_idx
-        self.number_of_data_per_frame =interval
+        self.number_of_data_per_frame = interval
         self.is_zero_outside_correction_range = condition
         self.sync_settings()
         print(self.imd.settings.__dict__)
