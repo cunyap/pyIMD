@@ -15,8 +15,8 @@ import math
 import pandas as pd
 from PyQt5 import uic
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSignal, Qt, QAbstractTableModel
-from PyQt5.Qt import QMainWindow, QApplication,  QPushButton, QSizePolicy, QTextDocumentFragment
+from PyQt5.QtCore import pyqtSignal, Qt, QAbstractTableModel, pyqtSlot
+from PyQt5.Qt import QMainWindow, QApplication,  QPushButton, QSizePolicy, QTextDocumentFragment, QPointF
 from PyQt5.QtWidgets import QAction, QFileDialog, QProgressBar, QMessageBox, QSlider
 from pyIMD.configuration.defaults import *
 from pyIMD.ui.resource_path import resource_path
@@ -82,6 +82,8 @@ class PositionCorrectionUI(QMainWindow):
         self.bookKeeper = BookKeeper()
         self.image_file_names = self.bookKeeper.image_paths
         self.scene = Scene(self.image, 0.0, 0.0, 500.0, 500.0)
+        self.scene.signal_add_object_at_position.connect(
+            self.handle_add_object_at_position)
 
         # Load and display the image
         self.scene.display_image(self.bookKeeper.getCurrentImagePath(), image_filter=self.image_filter_data)
@@ -320,10 +322,13 @@ class PositionCorrectionUI(QMainWindow):
     def on_new_cell_shape(self):
         self.draw_item = 2
 
-    def mousePressEvent(self, event):
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.draw_item = 0
 
-        # Mouse press
-        pos = self.graphicsView.mapToScene(event.pos())
+    @pyqtSlot(float, float, name="handle_add_object_at_position")
+    def handle_add_object_at_position(self, x, y):
+
         if QApplication.keyboardModifiers() == Qt.Key_Escape or QApplication.mouseButtons() == Qt.RightButton:
             self.draw_item = 0
 
@@ -333,7 +338,7 @@ class PositionCorrectionUI(QMainWindow):
             self.scene.removeCompositeLine()
 
             # Create a CompositeLine (it manages three interdependent QGraphicsWidgets)
-            compositeLine = CompositeLine(pos)
+            compositeLine = CompositeLine(QPointF(x, y))
 
             # Add the CompositeLine to the Scene. Note that the CompositeLine is
             # not a QGraphicsItem itself and cannot be added to the Scene directly.
@@ -358,14 +363,12 @@ class PositionCorrectionUI(QMainWindow):
                 self.bookKeeper.addCompositePolygon(currentCompositePolygon)
 
             # Add the first vertex
-            currentCompositePolygon._polygon_item.add_vertex(event.pos())
+            currentCompositePolygon._polygon_item.add_vertex(QPointF(x, y))
 
         elif QApplication.keyboardModifiers() == Qt.AltModifier:
             print("Implement me! i.e delete polygon item")
         else:
             pass
-
-        super().mousePressEvent(event)
 
     @staticmethod
     def calculate_norm_cell_to_reference(p1, p2, centroid):

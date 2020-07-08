@@ -22,7 +22,9 @@ class BookKeeper:
 
         self.timepoint = 0
         self.image_paths = [
-            resource_path('ui/icons/pyIMD_logo.png')]
+            resource_path('ui\\icons\\pyIMD_logo.png')]
+        # self.image_paths = [
+        #     resource_path('..\\icons\\pyIMD_logo.png')]
         self.initBookkeeper()
 
     def addImagePath(self, image_path):

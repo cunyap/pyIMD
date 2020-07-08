@@ -11,8 +11,8 @@
 # *******************************************************************************/
 
 from PyQt5.QtGui import QPixmap, QPainter
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsPixmapItem
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QApplication
+from PyQt5.QtCore import Qt, pyqtSignal
 import pyqtgraph as pg
 from pyIMD.ui.poscorrection.vertex import Vertex
 from pyIMD.ui.poscorrection.line import Line
@@ -29,6 +29,9 @@ class Scene(QGraphicsScene):
     """
     The main Scene.
     """
+
+    signal_add_object_at_position = \
+        pyqtSignal(float, float, name='signal_add_object_at_position')
 
     def __init__(self, image, x=0, y=0, width=500, height=500, parent=None):
         super().__init__(x, y, width, height, parent)
@@ -107,3 +110,20 @@ class Scene(QGraphicsScene):
                 type(item) is PolygonVertex or \
                     type(item) is Circle:
                 self.removeItem(item)
+
+    def mousePressEvent(self, event):
+        """
+        Process a mouse press event on the scene.
+        :param event: A mouse press event.
+        :return:
+        """
+        if event.buttons() == Qt.LeftButton:
+            x = event.scenePos().x()
+            y = event.scenePos().y()
+            self.signal_add_object_at_position.emit(x, y)
+
+        else:
+            pass
+
+        super().mousePressEvent(event)
+
