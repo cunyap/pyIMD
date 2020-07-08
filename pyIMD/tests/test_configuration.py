@@ -34,7 +34,8 @@ class TestConfiguration(TestCase):
 
         expected_result = {'_project_folder_path': '', '_rolling_window_size': 1000, '_selected_files': [],
                            '_measurements_path': '', '_read_text_data_from_line': 23, '_pre_start_with_cell_path': '',
-                           '_conversion_factor_hz_to_khz': 1000.0, '_figure_units': 'cm', '_figure_width': 56.44,
+                           '_conversion_factor_hz_to_khz': 1000.0, '_conversion_factor_px_to_mum': 0.65,
+                           '_figure_units': 'cm', '_figure_width': 56.44,
                            '_cell_position': 5, '_spring_constant': 4.0, '_figure_resolution_dpi': 72,
                            '_cantilever_length': 100, '_figure_name_pre_start_with_cell': 'FitWithCellData',
                            '_correct_for_frequency_offset': False,  '_frequency_offset_mode': 'Auto',
@@ -64,6 +65,7 @@ class TestConfiguration(TestCase):
                            '_initial_parameter_guess': [70.0, 2.0, 0.0, 0.0], '_lower_parameter_bounds':
                                [10.0, 1.0, -3, -3], '_cantilever_length': 100, '_rolling_window_size': 1000,
                            '_figure_width': 16.5, '_conversion_factor_hz_to_khz': 1000.0,
+                           '_conversion_factor_px_to_mum': 0.65,
                            '_figure_plot_every_nth_point': 1, '_project_folder_path': os.path.abspath("../examples/data/"
                                                                                                       "show_case/"),
                            '_selected_files': ['20190110_ShowCase_PLL_B.txt',
@@ -107,6 +109,7 @@ class TestConfigurationIO(XmlTestCase):
                            '_initial_parameter_guess': [70.0, 2.0, 0.0, 0.0], '_lower_parameter_bounds':
                                [10.0, 1.0, -3, -3], '_cantilever_length': 100, '_rolling_window_size': 1000,
                            '_figure_width': 16.5, '_conversion_factor_hz_to_khz': 1000.0,
+                           '_conversion_factor_px_to_mum': 0.65,
                            '_figure_plot_every_nth_point': 1, '_project_folder_path': os.path.abspath("../examples/"
                                                                                                       "data/show_case/"),
                            '_selected_files': ['20190110_ShowCase_PLL_B.txt', '20190110_ShowCase_PLL_A.txt',
@@ -159,6 +162,7 @@ class TestConfigurationIO(XmlTestCase):
         self.assertXpathValues(root, './GeneralSettings/figure_plot_every_nth_point/text()', '1')
         self.assertXpathValues(root, './GeneralSettings/conversion_factor_hz_to_khz/text()', '1000.0')
         self.assertXpathValues(root, './GeneralSettings/conversion_factor_deg_to_rad/text()', '-57.3')
+        self.assertXpathValues(root, './GeneralSettings/conversion_factor_px_to_mum/text()', '0.65')
         self.assertXpathValues(root, './GeneralSettings/spring_constant/text()', '4.0')
         self.assertXpathValues(root, './GeneralSettings/cantilever_length/text()', '100')
         self.assertXpathValues(root, './GeneralSettings/cell_position/text()', '9.5')
@@ -200,6 +204,7 @@ class TestConfigurationIO(XmlTestCase):
                            '_initial_parameter_guess': [70.0, 2.0, 0.0, 0.0], '_lower_parameter_bounds':
                                [10.0, 1.0, -3, -3], '_cantilever_length': 100, '_rolling_window_size': 1000,
                            '_figure_width': 56.44, '_conversion_factor_hz_to_khz': 1000.0,
+                           '_conversion_factor_px_to_mum': 0.65,
                            '_figure_plot_every_nth_point': 1, '_project_folder_path': '', '_selected_files': [],
                            '_figure_resolution_dpi': 72, '_correct_for_frequency_offset': False,
                            '_frequency_offset_mode': 'Auto', '_frequency_offset_n_measurements_used': 1,

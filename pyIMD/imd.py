@@ -79,6 +79,7 @@ class InertialMassDetermination(QObject):
                            "figure_plot_every_nth_point": FIGURE_PLOT_EVERY_NTH_POINT,
                            "conversion_factor_hz_to_khz": CONVERSION_FACTOR_HZ_TO_KHZ,
                            "conversion_factor_deg_to_rad": CONVERSION_FACTOR_DEG_TO_RAD,
+                           "conversion_factor_px_to_num": CONVERSION_FACTOR_PX_TO_MUM,
                            "spring_constant": SPRING_CONSTANT,
                            "cantilever_length": CANTILEVER_LENGTH,
                            "cell_position": CELL_POSITION,
@@ -127,6 +128,7 @@ class InertialMassDetermination(QObject):
                                                      data stets to increase readability and reducing file size.
              conversion_factor_hz_to_khz (`float`):   Conversion factor to convert from hertz to kilo hertz
              conversion_factor_deg_to_rad (`float`):  Conversion factor to convert from degrees to radian
+             conversion_factor_px_to_mum (`float`):   Conversion factor to convert from pixels to microns
              spring_constant (`float`):               Spring constant value of the cantilever
              initial_parameter_guess (`list`):        Initial parameter guess
              lower_parameter_bounds (`list`):         Lower parameter bounds
@@ -287,7 +289,7 @@ class InertialMassDetermination(QObject):
                     print('from', int(self.settings.image_start_index))
                     print('to', int(max_frame +self.settings.image_start_index))
                     position_correction_factor[int(self.settings.image_start_index):int(max_frame + 1)] = \
-                        interp_offsets_corrected
+                        interp_offsets_corrected * self.settings.conversion_factor_px_to_mum
                     self.position_correction_factor = position_correction_factor
                     print(position_correction_factor[296])
                     print('done with pos correction')

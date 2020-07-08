@@ -82,6 +82,8 @@ class SettingsDialog(QDialog):
         self.conversion_factor_hz_edit.textChanged.connect(self.check_state)
         self.conversion_factor_deg_edit.setValidator(double_validator)
         self.conversion_factor_deg_edit.textChanged.connect(self.check_state)
+        self.conversion_factor_px_edit.setValidator(double_validator)
+        self.conversion_factor_px_edit.textChanged.connect(self.check_state)
         self.spring_constant_edit.setValidator(double_validator)
         self.spring_constant_edit.textChanged.connect(self.check_state)
         self.cantilever_length_edit.setValidator(double_validator)
@@ -187,6 +189,7 @@ class SettingsDialog(QDialog):
             self.figure_plot_every_nth_point_edit.setText(str(FIGURE_PLOT_EVERY_NTH_POINT))
             self.conversion_factor_hz_edit.setText(str(CONVERSION_FACTOR_HZ_TO_KHZ))
             self.conversion_factor_deg_edit.setText(str(CONVERSION_FACTOR_DEG_TO_RAD))
+            self.conversion_factor_px_edit.setText(str(CONVERSION_FACTOR_PX_TO_MUM))
             self.spring_constant_edit.setText(str(SPRING_CONSTANT))
             self.cantilever_length_edit.setText(str(CANTILEVER_LENGTH))
             self.cell_position_edit.setText(str(CELL_POSITION))
@@ -233,6 +236,7 @@ class SettingsDialog(QDialog):
         self.figure_plot_every_nth_point_edit.setText(str(self.settings_dictionary['figure_plot_every_nth_point']))
         self.conversion_factor_hz_edit.setText(str(self.settings_dictionary['conversion_factor_hz_to_khz']))
         self.conversion_factor_deg_edit.setText(str(self.settings_dictionary['conversion_factor_deg_to_rad']))
+        self.conversion_factor_px_edit.setText(str(self.settings_dictionary['conversion_factor_px_to_mum']))
         self.spring_constant_edit.setText(str(self.settings_dictionary['spring_constant']))
         self.cantilever_length_edit.setText(str(self.settings_dictionary['cantilever_length']))
         self.cell_position_edit.setText(str(self.settings_dictionary['cell_position']))
@@ -323,6 +327,11 @@ class SettingsDialog(QDialog):
         conversion_factor_deg = float(self.conversion_factor_deg_edit.text())
         if not self.settings_dictionary["conversion_factor_deg_to_rad"] == conversion_factor_deg:
             self.settings_dictionary["conversion_factor_deg_to_rad"] = conversion_factor_deg
+            has_changed = True
+
+        conversion_factor_px = float(self.conversion_factor_px_edit.text())
+        if not self.settings_dictionary["conversion_factor_px_to_mum"] == conversion_factor_px:
+            self.settings_dictionary["conversion_factor_px_to_mum"] = conversion_factor_px
             has_changed = True
 
         spring_constant = float(self.spring_constant_edit.text())

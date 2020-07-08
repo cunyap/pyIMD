@@ -39,6 +39,7 @@ class Settings(object):
         self.figure_plot_every_nth_point = FIGURE_PLOT_EVERY_NTH_POINT
         self.conversion_factor_hz_to_khz = CONVERSION_FACTOR_HZ_TO_KHZ
         self.conversion_factor_deg_to_rad = CONVERSION_FACTOR_DEG_TO_RAD
+        self.conversion_factor_px_to_mum = CONVERSION_FACTOR_PX_TO_MUM
         self.spring_constant = SPRING_CONSTANT
         self.initial_parameter_guess = INITIAL_PARAMETER_GUESS
         self.lower_parameter_bounds = LOWER_PARAMETER_BOUNDS
@@ -86,7 +87,8 @@ class Settings(object):
                "\n\tfigure_name_pre_start_no_cell: %s (%s) \n\tfigure_name_pre_start_with_cell: %s (%s)" \
                "\n\tfigure_name_measured_data: %s(%s) \n\tfigure_plot_every_nth_point: % s( % s) " \
                "\n\tconversion_factor_hz_to_khz: %s (%s) " \
-               "\n\tconversion_factor_deg_to_rad: %s (%s) \n\tspring_constant: %s (%s) " \
+               "\n\tconversion_factor_deg_to_rad: %s (%s) \n\tconversion_factor_px_to_mum: %s (%s)" \
+               "\n\tspring_constant: %s (%s) " \
                "\n\tinitial_parameter_guess: %s (%s) \n\tlower_parameter_bounds: %s (%s) " \
                "\n\tupper_parameter_bounds: %s (%s) \n\trolling_window_size: % s( % s) " \
                "\n\tcorrect_for_frequency_offset: % s( % s) \n\tfrequency_offset_mode: % s( % s) " \
@@ -104,7 +106,8 @@ class Settings(object):
                    type(self.figure_name_measured_data), self.figure_plot_every_nth_point,
                    type(self.figure_plot_every_nth_point), self.conversion_factor_hz_to_khz,
                    type(self.conversion_factor_hz_to_khz), self.conversion_factor_deg_to_rad,
-                   type(self.conversion_factor_deg_to_rad), self.spring_constant, type(self.spring_constant),
+                   type(self.conversion_factor_deg_to_rad), self.conversion_factor_px_to_mum,
+                   type(self.conversion_factor_px_to_mum), self.spring_constant, type(self.spring_constant),
                    self.initial_parameter_guess, type(self.initial_parameter_guess),
                    self.lower_parameter_bounds, type(self.lower_parameter_bounds), self.upper_parameter_bounds,
                    type(self.upper_parameter_bounds), self.rolling_window_size, type(self.rolling_window_size),
@@ -262,6 +265,20 @@ class Settings(object):
         if not (type(factor) == float or type(factor) == int):
             raise Exception("Conversion factor should be a of type float or int.")
         self._conversion_factor_deg_to_rad = factor
+
+    conversion_factor_px_to_mum = property(operator.attrgetter('_conversion_factor_px_to_mum'))
+    """
+    Parameter defining the conversion factor from pixel of a microscopy image to microns.
+
+    Args:
+        factor (`float`):    Conversion factor from pixel to microns.
+    """
+
+    @conversion_factor_px_to_mum.setter
+    def conversion_factor_px_to_mum(self, factor):
+        if not (type(factor) == float or type(factor) == int):
+            raise Exception("Conversion factor should be a of type float or int.")
+        self._conversion_factor_px_to_mum = factor
 
     spring_constant = property(operator.attrgetter('_spring_constant'))
     """
@@ -721,6 +738,7 @@ class Settings(object):
                                                      data stets to increase readability and reducing file size.
             conversion_factor_hz_to_khz (`float`):   Conversion factor to convert from hertz to kilo hertz
             conversion_factor_deg_to_rad (`float`):  Conversion factor to convert from degrees to radian
+            conversion_factor_px_to_mum (`float`):   Conversion factor to convert from pixels to microns
             spring_constant (`float`):               Spring constant value of the cantilever
             initial_parameter_guess (`list`):        Initial parameter guess
             lower_parameter_bounds (`list`):         Lower parameter bounds
@@ -888,6 +906,7 @@ class Settings(object):
             figure_plot_every_nth_point = etree.SubElement(general_settings, 'figure_plot_every_nth_point')
             conversion_factor_hz_to_khz = etree.SubElement(general_settings, 'conversion_factor_hz_to_khz')
             conversion_factor_deg_to_rad = etree.SubElement(general_settings, 'conversion_factor_deg_to_rad')
+            conversion_factor_px_to_mum = etree.SubElement(general_settings, 'conversion_factor_px_to_mum')
             spring_constant = etree.SubElement(general_settings, 'spring_constant')
             cantilever_length = etree.SubElement(general_settings, 'cantilever_length')
             cell_position = etree.SubElement(general_settings, 'cell_position')
@@ -934,6 +953,7 @@ class Settings(object):
             figure_plot_every_nth_point.text = str(self.figure_plot_every_nth_point)
             conversion_factor_hz_to_khz.text = str(self.conversion_factor_hz_to_khz)
             conversion_factor_deg_to_rad.text = str(self.conversion_factor_deg_to_rad)
+            conversion_factor_px_to_mum.text = str(self.conversion_factor_px_to_mum)
             spring_constant.text = str(self.spring_constant)
             cantilever_length.text = str(self.cantilever_length)
             cell_position.text = str(self.cell_position)

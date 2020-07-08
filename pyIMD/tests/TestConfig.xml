@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<PyIMDSettings creator="pyIMD" timestamp="2019_12_18__21_31_13">
+<PyIMDSettings creator="pyIMD" timestamp="2020_07_08__18_08_51">
   <GeneralSettings>
     <figure_format>png</figure_format>
     <figure_width>56.44</figure_width>
@@ -12,6 +12,7 @@
     <figure_plot_every_nth_point>1</figure_plot_every_nth_point>
     <conversion_factor_hz_to_khz>1000.0</conversion_factor_hz_to_khz>
     <conversion_factor_deg_to_rad>-57.3</conversion_factor_deg_to_rad>
+    <conversion_factor_px_to_mum>0.65</conversion_factor_px_to_mum>
     <spring_constant>4.0</spring_constant>
     <cantilever_length>100</cantilever_length>
     <cell_position>5</cell_position>
@@ -41,5 +42,9 @@
     <ref_line_1_y/>
     <ref_line_2_x/>
     <ref_line_2_y/>
+    <image_start_index>0</image_start_index>
+    <position_correction_end_frame>0</position_correction_end_frame>
+    <number_of_data_per_frame>0</number_of_data_per_frame>
+    <is_zero_outside_correction_range>True</is_zero_outside_correction_range>
   </ProjectSettings>
 </PyIMDSettings>

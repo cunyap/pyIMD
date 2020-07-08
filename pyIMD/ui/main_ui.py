@@ -110,6 +110,7 @@ class IMDWindow(QtWidgets.QMainWindow):
                            "figure_plot_every_nth_point": FIGURE_PLOT_EVERY_NTH_POINT,
                            "conversion_factor_hz_to_khz": CONVERSION_FACTOR_HZ_TO_KHZ,
                            "conversion_factor_deg_to_rad": CONVERSION_FACTOR_DEG_TO_RAD,
+                           "conversion_factor_px_to_mum": CONVERSION_FACTOR_PX_TO_MUM,
                            "spring_constant": SPRING_CONSTANT,
                            "cantilever_length": CANTILEVER_LENGTH,
                            "cell_position": CELL_POSITION,
@@ -576,6 +577,7 @@ class IMDWindow(QtWidgets.QMainWindow):
             self.imd.settings.figure_plot_every_nth_point = int(self.__settings["figure_plot_every_nth_point"])
             self.imd.settings.conversion_factor_hz_to_khz = float(self.__settings["conversion_factor_hz_to_khz"])
             self.imd.settings.conversion_factor_deg_to_rad = float(self.__settings["conversion_factor_deg_to_rad"])
+            self.imd.settings.conversion_factor_px_to_mum = float(self.__settings["conversion_factor_px_to_mum"])
             self.imd.settings.spring_constant = float(self.__settings["spring_constant"])
             self.imd.settings.cantilever_length = float(self.__settings["cantilever_length"])
             self.imd.settings.cell_position = float(self.__settings["cell_position"])
@@ -739,6 +741,7 @@ class IMDWindow(QtWidgets.QMainWindow):
                                    "figure_plot_every_nth_point": self.imd.settings.figure_plot_every_nth_point,
                                    "conversion_factor_hz_to_khz": self.imd.settings.conversion_factor_hz_to_khz,
                                    "conversion_factor_deg_to_rad": self.imd.settings.conversion_factor_deg_to_rad,
+                                   "conversion_factor_px_to_mum": self.imd.settings.conversion_factor_px_to_mum,
                                    "spring_constant": self.imd.settings.spring_constant,
                                    "cantilever_length": self.imd.settings.cantilever_length,
                                    "cell_position": self.imd.settings.cell_position,

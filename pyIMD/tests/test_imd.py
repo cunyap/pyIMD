@@ -41,7 +41,8 @@ class TestConfiguration(TestCase):
                            '_correct_for_frequency_offset': False,  '_frequency_offset_mode': 'Auto',
                            '_frequency_offset_n_measurements_used': 1, '_frequency_offset': 0,
                            '_pre_start_no_cell_path': '', '_figure_height': 45.16, '_figure_name_measured_data':
-                               'CalculatedCellMass', '_conversion_factor_deg_to_rad': -57.3, '_calculation_mode': 'PLL',
+                               'CalculatedCellMass', '_conversion_factor_deg_to_rad': -57.3,
+                           '_conversion_factor_px_to_mum': 0.65, '_calculation_mode': 'PLL',
                            '_figure_plot_every_nth_point': 1, '_initial_parameter_guess': [70.0, 2.0, 0.0, 0.0],
                            '_upper_parameter_bounds': [100.0, 5.0, 3, 3], '_figure_format': 'png',
                            '_lower_parameter_bounds': [10.0, 1.0, -3, -3], '_text_data_delimiter': '\t',
@@ -64,6 +65,7 @@ class TestConfiguration(TestCase):
                            '_upper_parameter_bounds': [90.0, 7, 3.0, 3.0], '_conversion_factor_deg_to_rad': -57.3,
                            '_initial_parameter_guess': [70.0, 2.0, 0.0, 0.0], '_lower_parameter_bounds':
                                [10.0, 1.0, -3, -3], '_cantilever_length': 100, '_rolling_window_size': 1000,
+                           '_conversion_factor_px_to_mum': 0.65,
                            '_figure_width': 16.5, '_conversion_factor_hz_to_khz': 1000.0,
                            '_figure_plot_every_nth_point': 1, '_project_folder_path': os.path.abspath("../examples/data/"
                                                                                                       "show_case/"),
