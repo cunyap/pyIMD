@@ -71,8 +71,8 @@ class PositionCorrectionUI(QMainWindow):
         """
         super(PositionCorrectionUI, self).__init__()
 
-        #uic.loadUi(resource_path(os.path.join('ui\\positioncorrectionui\\positioncorrectionui.ui')), self)
-        uic.loadUi(resource_path(os.path.join('ui\\positioncorrectionui.ui')), self)
+        uic.loadUi(resource_path(os.path.join('positioncorrectionui\\positioncorrectionui.ui')), self)
+        # uic.loadUi(resource_path(os.path.join('ui\\positioncorrectionui.ui')), self)
 
         self.setWindowTitle('pyIMD :: Position Correction')
         self.draw_reference_line_action = QAction(QIcon(resource_path('scratch_space\\Icons-01.png')), 'Draw new cantilever tip reference line', self)
@@ -110,7 +110,7 @@ class PositionCorrectionUI(QMainWindow):
         self.image_file_names = files
         image = ndimage.rotate(imread(files[0]), -90)
 
-        arrays = [np.random.normal(size=(100, 100)) for i in range(5)]
+        arrays = [np.random.normal(size=(417, 417)) for i in range(5)]
         image_stack = np.stack(arrays, axis=0)
         image_stack = image_stack + image
         self.start_time_spin_box.setValue(1)
