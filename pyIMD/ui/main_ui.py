@@ -17,7 +17,9 @@ import ctypes
 import webbrowser
 import pyqtgraph as pg
 import pandas as pd
+import numpy as np
 from ast import literal_eval
+from pathlib import Path
 from PyQt5 import uic, QtWidgets, QtCore, QtGui
 from PyQt5.Qt import QFileDialog, QMessageBox, QApplication, QStyle, QTextCursor, QPushButton, QListWidget, QSize,\
     QGraphicsSvgItem, Qt
@@ -33,6 +35,7 @@ from pyIMD.ui.help import QuickInstructions, ChangeLog, About
 from pyIMD.ui.tools import ConcatenateFiles
 from pyIMD.ui.poscorrection.position_correction import PositionCorrectionUI
 from pyIMD.__init__ import __version__, __operating_system__
+pg.setConfigOption('background', 'w')
 
 __author__ = 'Andreas P. Cuny'
 
@@ -71,10 +74,9 @@ class IMDWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(IMDWindow, self).__init__()
-        uic.loadUi(resource_path(os.path.join('ui', 'main_window.ui')), self)
+        uic.loadUi(resource_path(str(Path('ui', 'main_window.ui'))), self)
         self.setWindowTitle('pyIMD: Inertial mass determination [build: v%s %s]' % (__version__, __operating_system__))
-        self.setWindowIcon(QtGui.QIcon(resource_path(os.path.join(os.path.join("ui", "icons",
-                                                                               "pyIMD_logo_icon.ico")))))
+        self.setWindowIcon(QtGui.QIcon(resource_path(str(Path("ui", "icons", "pyIMD_logo_icon.ico")))))
 
         # Add AppUserModelID for windows systems
         if sys.platform == 'win32':
@@ -203,7 +205,7 @@ class IMDWindow(QtWidgets.QMainWindow):
         self.tabWidget.setCurrentIndex(0)
 
         self.graphicsView.plotItem.ctrlMenu = None
-        self.imd_icon = QGraphicsSvgItem(resource_path(os.path.join(os.path.join("ui", "icons", "pyIMD_logo_vect.svg"))))
+        self.imd_icon = QGraphicsSvgItem(resource_path(str(Path("ui", "icons", "pyIMD_logo_vect.svg"))))
         self.imd_icon.scale(1, -1)
 
         self.graphicsView.addItem(self.imd_icon)
@@ -379,6 +381,7 @@ class IMDWindow(QtWidgets.QMainWindow):
                 # Display data
                 model = PandasDataFrameModel(self.imd.data_measured)
                 self.tableView.setModel(model)
+                self.graphicsView.clear()
                 # Notify user about selection
                 self.print_to_console("Displaying: " + item.text())
 
@@ -420,7 +423,7 @@ class IMDWindow(QtWidgets.QMainWindow):
 
             elif item.text() == 'Pre start frequency shift':
                 # Display data
-                model = PandasDataFrameModel(self.imd.data_pre_start_no_cell)# Try to fuse the dfs first to one table
+                model = PandasDataFrameModel(self.imd.data_pre_start_no_cell)  # Try to fuse the dfs first to one table
                 self.tableView.setModel(model)
                 self.graphicsView.clear()
                 y_fit_without = fit_function(self.imd.data_pre_start_no_cell.iloc[:, 0],
@@ -457,15 +460,16 @@ class IMDWindow(QtWidgets.QMainWindow):
                                        self.imd.calculated_cell_mass.iloc[::10, 1], pen=None, symbol='o',
                                        symbolPen=pg.hsvColor(0, 0, 0, 0.1), symbolBrush=pg.hsvColor(0, 0, 0, 0.1),
                                        name="Measured cell mass")
-                self.graphicsView.plot(self.imd.calculated_cell_mass.iloc[:, 0],
-                                       self.imd.calculated_cell_mass.iloc[:, 2], pen=pg.mkPen('r', width=1.5),
-                                       name="Mean measured cell mass")
+                # Drop nan's first
+                t = self.imd.calculated_cell_mass.iloc[:, 0].values
+                m = self.imd.calculated_cell_mass.iloc[:, 2].values
+                t = t[~np.isnan(m)]
+                m = m[~np.isnan(m)]
+                self.graphicsView.plot(t, m, pen=pg.mkPen(color=(255, 0, 0), width=1.5), name="Mean measured cell mass")
                 self.graphicsView.setLabel('bottom', 'Time (h)')
                 self.graphicsView.setLabel('left', 'Mass (ng)')
                 self.graphicsView.showGrid(x=True, y=True)
-                print(self.graphicsView.__dict__)
-                self.graphicsView.getViewBox.setBackgroundColor((255, 0, 0))
-                # Notify user about selection
+                # # Notify user about selection
                 self.print_to_console("Displaying: " + item.text())
             else:
                 return
@@ -844,7 +848,7 @@ class IMDWindow(QtWidgets.QMainWindow):
         self.settings.setValue('display_on_startup', self.qi.display_on_startup)
 
         msg_box = QMessageBox()
-        msg_box.setWindowIcon(QtGui.QIcon(resource_path(os.path.join("ui", "icons", "pyIMD_logo_icon.ico"))))
+        msg_box.setWindowIcon(QtGui.QIcon(resource_path(str(Path("ui", "icons", "pyIMD_logo_icon.ico")))))
         msg_box.setWindowTitle('pyIMD :: Quit Program')
         msg_box.setText('Do you want to save changes before quitting the program?')
         save_btn = QPushButton('Save')
@@ -893,6 +897,6 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     main = IMDWindow()
     app_icon = QtGui.QIcon()
-    app_icon.addFile(resource_path(os.path.join("icons", "pyIMD_logo_icon.ico")), QSize(256, 256))
+    app_icon.addFile(resource_path(str(Path("icons", "pyIMD_logo_icon.ico"))), QSize(256, 256))
     app.setWindowIcon(app_icon)
     sys.exit(app.exec_())
