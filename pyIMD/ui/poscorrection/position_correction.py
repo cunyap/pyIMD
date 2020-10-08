@@ -19,6 +19,7 @@ from PyQt5.QtCore import pyqtSignal, Qt, QAbstractTableModel, pyqtSlot
 from PyQt5.Qt import QMainWindow, QApplication,  QPushButton, QSizePolicy, QTextDocumentFragment, QPointF
 from PyQt5.QtWidgets import QAction, QFileDialog, QProgressBar, QMessageBox, QSlider
 from pyIMD.configuration.defaults import *
+from pathlib import Path
 from pyIMD.ui.resource_path import resource_path
 from pyIMD.ui.poscorrection.bookkeeper import BookKeeper
 from pyIMD.ui.poscorrection.scene import Scene
@@ -57,15 +58,25 @@ class PositionCorrectionUI(QMainWindow):
         """
         super(PositionCorrectionUI, self).__init__()
 
-        # uic.loadUi(resource_path(os.path.join('../positioncorrectionui/positioncorrectionui.ui')), self)
-        uic.loadUi(resource_path(os.path.join('ui\\positioncorrectionui.ui')), self)
-        # uic.loadUi(resource_path(os.path.join('positioncorrectionui.ui')), self)
-
+        uic.loadUi(resource_path(str(Path('ui', 'positioncorrectionui.ui'))), self)
         self.setWindowTitle('pyIMD :: Position Correction')
-        self.draw_reference_line_action = QAction(QIcon(resource_path('ui\\icons\\Icons-01.png')), 'Draw new cantilever tip reference line', self)
-        self.draw_cell_outline_action = QAction(QIcon(resource_path('ui\\icons\\Icons-02.png')), 'Draw new cell outline', self)
+        self.draw_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-01.png')))),
+                                                  'Draw new cantilever tip reference line', self)
+        self.delete_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-01.png')))),
+                                                  'Delete current cantilever tip reference line', self)
+        self.draw_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+                                                'Draw new cell outline', self)
+        self.copy_previous_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+                                                'Copy cell outline and reference line from previous timepoint', self)
+        self.copy_all_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+                                                'Copy current cell outline  and reference line to all timepoints', self)
+        self.delete_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+                                                'Delete current cell outline', self)
         self.draw_reference_line_action.triggered.connect(self.on_new_reference_line)
         self.draw_cell_outline_action.triggered.connect(self.on_new_cell_shape)
+        self.copy_previous_cell_outline_action.triggered.connect(self.on_copy_cell_shape)
+        self.copy_all_cell_outline_action.triggered.connect(self.on_copy_all_cell_shapes)
+        self.delete_cell_outline_action.triggered.connect(self.on_delete_cell_shape)
 
         self.draw_item = None
         self.image_file_names = []
@@ -319,8 +330,24 @@ class PositionCorrectionUI(QMainWindow):
     def on_new_reference_line(self):
         self.draw_item = 1
 
+    def on_delete_reference_line(self):
+        self.scene.removeCompositeLine()
+        self.bookKeeper.removeCompositeLine()
+
     def on_new_cell_shape(self):
         self.draw_item = 2
+
+    def on_copy_cell_shape(self):
+        self.scene.removeCompositePolygon()
+        self.bookKeeper.copyPreviousCompositePolygon()
+
+    def on_copy_all_cell_shapes(self):
+        self.scene.removeCompositePolygon()
+        self.bookKeeper.addCompositePolygonAllTime()
+
+    def on_delete_cell_shape(self):
+        self.scene.removeCompositePolygon()
+        self.bookKeeper.removeCompositePolygon()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:

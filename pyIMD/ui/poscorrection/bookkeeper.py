@@ -60,8 +60,13 @@ class BookKeeper:
         """
         Add a CompositeLine at current timepoint.
         """
-        print(compositeLine)
         self.compositeLines[self.timepoint] = compositeLine
+
+    def removeCompositeLine(self):
+        """
+        Removes the CompositeLine from the bookKeeper.
+        """
+        self.compositeLines[self.timepoint] = None
 
     def getCurrentCompositePolygon(self):
         """
@@ -80,6 +85,33 @@ class BookKeeper:
         Add a CompositePolygon at current timepoint.
         """
         self.compositePolygons[self.timepoint] = compositePolygon
+
+    def copyPreviousCompositePolygon(self):
+        """
+        copy previous CompositePolygon and CompositeLine at current timepoint.
+        """
+        if self.timepoint >= 1:
+            # Copy previous polygon
+            self.compositePolygons[self.timepoint] = self.compositePolygons[self.timepoint - 1]
+            # Copy previous line
+            self.compositeLines[self.timepoint] = self.compositeLines[self.timepoint - 1]
+
+    def addCompositePolygonAllTime(self):
+        """
+        add current CompositePolygon and CompositeLine at all timepoint.
+        """
+
+        current_polygon = self.compositePolygons[self.timepoint]
+        current_line = self.compositeLines[self.timepoint]
+        for ix, item in enumerate(self.compositePolygons):
+            self.compositePolygons[ix] = current_polygon
+            self.compositeLines[ix] = current_line
+
+    def removeCompositePolygon(self):
+        """
+        Removes the compositePolygons from the bookKeeper.
+        """
+        self.compositePolygons[self.timepoint] = None
 
     def getCurrentImagePath(self):
         """
