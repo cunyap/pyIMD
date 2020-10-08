@@ -16,9 +16,9 @@ imd = InertialMassDetermination()
 
 # Create a config file for the project / experiment to analyze using default values. Note non default parameters can be
 # added as optional arguments for e.g. spring_constant = 5.
-file_path1 = "/pyIMD/examples/data/show_case/20170712_RSN_3_B"
-file_path2 = "/pyIMD/examples/data/show_case/20170712_RSN_3_A"
-file_path3 = "/pyIMD/examples/data/show_case/20170712_RSN_3_A_long_term.tdms"
+file_path1 = "/pyIMD/examples/data/pll/20170712_RSN_3_B"
+file_path2 = "/pyIMD/examples/data/pll/20170712_RSN_3_A"
+file_path3 = "/pyIMD/examples/data/pll/20170712_RSN_3_A_long_term.tdms"
 imd.create_pyimd_project(file_path1, file_path2, file_path3, '\t', 23, 'PLL', figure_width=5.4, figure_height=9.35,
                          initial_parameter_guess=[73.0, 5.2, 0.0, 0.0], upper_parameter_bounds=[100.0, 7.0, 3.0, 3.0],
                          spring_constant=8.0, cell_position=9.5, cantilever_length=100.0, figure_format='pdf')
