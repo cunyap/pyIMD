@@ -20,6 +20,7 @@ from pyIMD.ui.poscorrection.polygon import Polygon
 from pyIMD.ui.poscorrection.polygonVertex import PolygonVertex
 from pyIMD.ui.poscorrection.circle import Circle
 from pyIMD.ui.poscorrection.image_filter import filter_image
+from pyIMD.ui.poscorrection.compositeLine import CompositeLine
 from skimage.io import imread
 from skimage.color import rgb2gray
 from scipy import ndimage
@@ -97,7 +98,9 @@ class Scene(QGraphicsScene):
         delete the object.
         """
         for item in self.items():
-            if type(item) is Vertex or type(item) is Line:
+            if type(item) is CompositeLine or \
+                    type(item) is Line or \
+                    type(item) is Vertex:
                 self.removeItem(item)
 
     def removeCompositePolygon(self):

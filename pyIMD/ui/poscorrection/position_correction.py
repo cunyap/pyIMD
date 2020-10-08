@@ -73,6 +73,7 @@ class PositionCorrectionUI(QMainWindow):
         self.delete_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
                                                 'Delete current cell outline', self)
         self.draw_reference_line_action.triggered.connect(self.on_new_reference_line)
+        self.delete_reference_line_action.triggered.connect(self.on_delete_reference_line)
         self.draw_cell_outline_action.triggered.connect(self.on_new_cell_shape)
         self.copy_previous_cell_outline_action.triggered.connect(self.on_copy_cell_shape)
         self.copy_all_cell_outline_action.triggered.connect(self.on_copy_all_cell_shapes)
@@ -135,7 +136,11 @@ class PositionCorrectionUI(QMainWindow):
         self.initialize_offset_dataframe(self.bookKeeper.num_timepoints)
         self.graphicsView = self.view
         self.mainToolBar.addAction(self.draw_reference_line_action)
+        self.mainToolBar.addAction(self.delete_reference_line_action)
         self.mainToolBar.addAction(self.draw_cell_outline_action)
+        self.mainToolBar.addAction(self.copy_previous_cell_outline_action)
+        self.mainToolBar.addAction(self.copy_all_cell_outline_action)
+        self.mainToolBar.addAction(self.delete_cell_outline_action)
 
         self.imageDirEdit.setReadOnly(True)
 
@@ -331,23 +336,25 @@ class PositionCorrectionUI(QMainWindow):
         self.draw_item = 1
 
     def on_delete_reference_line(self):
-        self.scene.removeCompositeLine()
         self.bookKeeper.removeCompositeLine()
+        self.scene.removeCompositeLine()
 
     def on_new_cell_shape(self):
         self.draw_item = 2
 
     def on_copy_cell_shape(self):
         self.scene.removeCompositePolygon()
+        self.scene.removeCompositeLine()
         self.bookKeeper.copyPreviousCompositePolygon()
+        self.redraw_scene()
 
     def on_copy_all_cell_shapes(self):
-        self.scene.removeCompositePolygon()
         self.bookKeeper.addCompositePolygonAllTime()
+        self.redraw_scene()
 
     def on_delete_cell_shape(self):
-        self.scene.removeCompositePolygon()
         self.bookKeeper.removeCompositePolygon()
+        self.scene.removeCompositePolygon()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
