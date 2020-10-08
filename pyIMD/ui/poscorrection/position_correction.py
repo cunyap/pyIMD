@@ -62,15 +62,15 @@ class PositionCorrectionUI(QMainWindow):
         self.setWindowTitle('pyIMD :: Position Correction')
         self.draw_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-01.png')))),
                                                   'Draw new cantilever tip reference line', self)
-        self.delete_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-01.png')))),
+        self.delete_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-06.png')))),
                                                   'Delete current cantilever tip reference line', self)
         self.draw_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
                                                 'Draw new cell outline', self)
-        self.copy_previous_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+        self.copy_previous_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-03.png')))),
                                                 'Copy cell outline and reference line from previous timepoint', self)
-        self.copy_all_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+        self.copy_all_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-04.png')))),
                                                 'Copy current cell outline  and reference line to all timepoints', self)
-        self.delete_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+        self.delete_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-05.png')))),
                                                 'Delete current cell outline', self)
         self.draw_reference_line_action.triggered.connect(self.on_new_reference_line)
         self.delete_reference_line_action.triggered.connect(self.on_delete_reference_line)

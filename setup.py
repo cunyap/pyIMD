@@ -73,6 +73,6 @@ setup(name='pyIMD',
                    ],
       install_requires=['pandas>=0.20.0', 'numpy>=1.14.5', 'scipy<1.3.0', 'nptdms>=0.12.0', 'tqdm>=4.23.4',
                         'plotnine', 'PyQT5', 'lxml', 'xmltodict', 'matplotlib', 'pyyaml', 'pyqtgraph',
-                        'xmlunittest', 'scikit-image', 'pgcolorbar'],
+                        'xmlunittest', 'scikit-image', 'pgcolorbar', 'scikit-image'],
 
       )
