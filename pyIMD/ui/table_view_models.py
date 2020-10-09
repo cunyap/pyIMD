@@ -46,7 +46,7 @@ class PandasDataFrameModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return QtCore.QVariant()
 
-        return QtCore.QVariant(str(self._data_frame.ix[index.row(), index.column()]))
+        return QtCore.QVariant(str(self._data_frame.iloc[index.row(), index.column()]))
 
     def setData(self, index, value, role):
         row = self._data_frame.index[index.row()]
