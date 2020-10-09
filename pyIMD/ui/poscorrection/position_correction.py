@@ -60,11 +60,11 @@ class PositionCorrectionUI(QMainWindow):
 
         uic.loadUi(resource_path(str(Path('ui', 'positioncorrectionui.ui'))), self)
         self.setWindowTitle('pyIMD :: Position Correction')
-        self.draw_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-01.png')))),
+        self.draw_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
                                                   'Draw new cantilever tip reference line', self)
         self.delete_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-06.png')))),
                                                   'Delete current cantilever tip reference line', self)
-        self.draw_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+        self.draw_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-01.png')))),
                                                 'Draw new cell outline', self)
         self.copy_previous_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-03.png')))),
                                                 'Copy cell outline and reference line from previous timepoint', self)
