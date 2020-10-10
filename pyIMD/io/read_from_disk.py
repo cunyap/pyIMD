@@ -86,14 +86,14 @@ def read_from_dat(file, delimiter):
     return data
 
 
-def read_from_file(file, delimiter, header=True):
+def read_from_file(file, delimiter, header=0):
     """
     Method to read data from a file.
 
     Args:
         file (`str`):               File path + file name to a .TDMS or .txt file.
         delimiter (`str`):          Delimiter used in the data file to separate columns
-        header (`bool`):            True if file has a header. False otherwise
+        header (`int`):            True if file has a header. False otherwise
 
     Returns:
         data (`pandas data frame`):  Returns data structured in a pandas data frame.
