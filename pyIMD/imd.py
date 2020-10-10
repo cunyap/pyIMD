@@ -265,17 +265,14 @@ class InertialMassDetermination(QObject):
                     self.logger.info('Position correction factor: {}'.format(self.position_correction_factor))
                 else:
                     # Interpolated according to data
-                    pos_data = pd.DataFrame(np.linspace(1, len(self.settings.cell_offsets),
-                                                            len(self.settings.cell_offsets)), columns={'frames'})
+                    pos_data = pd.DataFrame(np.arange(1, len(self.settings.cell_offsets) + 1), columns={'frames'})
                     pos_data['offsets'] = self.settings.cell_offsets
-                    print(pos_data)
-                    pos_data['indices'] = ((pos_data['frames'] - 1) * self.settings.number_of_data_per_frame) + \
-                                         self.settings.image_start_index
-                    print(pos_data)
+                    pos_data['indices'] = ((pos_data['frames'].values - 1) * self.settings.number_of_data_per_frame) + \
+                                            self.settings.image_start_index
+
                     max_frame = pos_data['indices'].iloc[-1]
-                    print(max_frame)
-                    new_x = np.linspace(self.settings.image_start_index, max_frame, (max_frame-
-                                                                                     self.settings.image_start_index) +1)
+                    new_x = np.linspace(self.settings.image_start_index, max_frame,
+                                        (max_frame-self.settings.image_start_index) + 1)
                     interp_offsets = np.interp(new_x, pos_data['indices'], pos_data['offsets'])
                     if self.settings.is_zero_outside_correction_range:
                         position_correction_factor = np.zeros(len(self.data_measured))
@@ -283,15 +280,14 @@ class InertialMassDetermination(QObject):
                         position_correction_factor = np.ones(len(self.data_measured))
                     interp_offsets_corrected = calculate_position_correction(interp_offsets,
                                                                              self.settings.cantilever_length)
-                    print(interp_offsets_corrected)
-                    print('len data', len(self.data_measured))
-                    print('len interp offset corrected', len(interp_offsets_corrected))
-                    print('from', int(self.settings.image_start_index))
-                    print('to', int(max_frame +self.settings.image_start_index))
+                    # print(interp_offsets_corrected)
+                    # print('len data', len(self.data_measured))
+                    # print('len interp offset corrected', len(interp_offsets_corrected))
+                    # print('from', int(self.settings.image_start_index))
+                    # print('to', int(max_frame +self.settings.image_start_index))
                     position_correction_factor[int(self.settings.image_start_index):int(max_frame + 1)] = \
                         interp_offsets_corrected * self.settings.conversion_factor_px_to_mum
                     self.position_correction_factor = position_correction_factor
-                    print(position_correction_factor[296])
                     print('done with pos correction')
 
                 # Calc resonance frequency for pre start data with cell attached to cantilever
