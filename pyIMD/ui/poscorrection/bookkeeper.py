@@ -37,7 +37,6 @@ class BookKeeper:
         self.images = self.num_timepoints * [None]
         self.compositeLines = self.num_timepoints * [None]
         self.compositePolygons = self.num_timepoints * [None]
-        print(self.image_paths)
 
     def getCurrentTimepoint(self):
         """

@@ -677,15 +677,15 @@ class IMDWindow(QtWidgets.QMainWindow):
         Args:
             data (`PandasDataframe`):       Data as pandas data frame received from Position Correction instance.
         """
-        print(data, start_idx, end_idx, interval, condition)
+        # print(data, start_idx, end_idx, interval, condition)
         self.received_data = data
         self.image_start_index = start_idx
         self.position_correction_end_frame = end_idx
         self.number_of_data_per_frame = interval
         self.is_zero_outside_correction_range = condition
         self.sync_settings()
-        print(self.imd.settings.__dict__)
-        print(self.imd.settings.cell_center_of_mass_x)
+        # print(self.imd.settings.__dict__)
+        # print(self.imd.settings.cell_center_of_mass_x)
 
     def save_project(self):
         """
