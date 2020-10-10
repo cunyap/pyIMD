@@ -232,7 +232,8 @@ class InertialMassDetermination(QObject):
                 self.data_pre_start_with_cell = read_from_text(self.settings.pre_start_with_cell_path,
                                                                self.settings.text_data_delimiter,
                                                                self.settings.read_text_data_from_line)
-                self.data_measured = read_from_file(self.settings.measurements_path, self.settings.text_data_delimiter)
+                self.data_measured = read_from_file(self.settings.measurements_path, self.settings.text_data_delimiter,
+                                                    header=None)
                 self.logger.info('Done reading all files')
                 # Convert data to the correct units
                 self.convert_data()
@@ -268,7 +269,7 @@ class InertialMassDetermination(QObject):
                     pos_data = pd.DataFrame(np.arange(1, len(self.settings.cell_offsets) + 1), columns={'frames'})
                     pos_data['offsets'] = self.settings.cell_offsets
                     pos_data['indices'] = ((pos_data['frames'].values - 1) * self.settings.number_of_data_per_frame) + \
-                                            self.settings.image_start_index
+                                          (self.settings.image_start_index - 1)
 
                     max_frame = pos_data['indices'].iloc[-1]
                     new_x = np.linspace(self.settings.image_start_index, max_frame,
@@ -282,10 +283,11 @@ class InertialMassDetermination(QObject):
                                                                              self.settings.cantilever_length)
                     # print(interp_offsets_corrected)
                     # print('len data', len(self.data_measured))
+                    # print(self.data_measured.iloc[0,:])
                     # print('len interp offset corrected', len(interp_offsets_corrected))
                     # print('from', int(self.settings.image_start_index))
                     # print('to', int(max_frame +self.settings.image_start_index))
-                    position_correction_factor[int(self.settings.image_start_index):int(max_frame + 1)] = \
+                    position_correction_factor[int(self.settings.image_start_index-1):int(max_frame)] = \
                         interp_offsets_corrected * self.settings.conversion_factor_px_to_mum
                     self.position_correction_factor = position_correction_factor
                     print('done with pos correction')

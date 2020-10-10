@@ -33,16 +33,17 @@ def read_from_tdms(file):
     return data
 
 
-def read_from_text(file, delimiter, read_from_row):
+def read_from_text(file, delimiter, read_from_row, header=0):
     """
     Method to read data from text files.
 
     Args:
-        file (`str`):               File path + file name.
-        delimiter (`str`):          Delimiter used in the data file to separate columns
-        read_from_row (`int`):      Row number from where to start reading data to be able \
-                                    to skip heading text rows. Make sure that you keep the \
-                                    Frequency, Amplitude and Phase headers.
+        file (`str`):                       File path + file name.
+        delimiter (`str`):                  Delimiter used in the data file to separate columns
+        read_from_row (`int`, `None`):      Row number from where to start reading data to be able \
+                                            to skip heading text rows. Make sure that you keep the \
+                                            Frequency, Amplitude and Phase headers.
+        header (`bool`):            True if file has a header. False otherwise
 
     Returns:
         data (`pandas data frame`):  Returns data structured in a pandas data frame.
@@ -55,11 +56,11 @@ def read_from_text(file, delimiter, read_from_row):
         data = concat([raw_data.iloc[:, 0] + raw_data.iloc[:, 1], raw_data.iloc[:, 2:4]], axis=1)
         data.rename(columns={0: ('Frequency (%s)' % unit)}, inplace=True)
     else:
-        data = read_csv(file, sep=delimiter, skiprows=read_from_row)
+        data = read_csv(file, sep=delimiter, skiprows=read_from_row, header=header)
 
     # Handle cases where data in text files is represented with commas instead of periods.
     if type(data.iloc[1, 0]) == str:
-        data = read_csv(file, sep=delimiter, skiprows=read_from_row, decimal=",")
+        data = read_csv(file, sep=delimiter, skiprows=read_from_row, decimal=",", header=header)
     return data
 
 
@@ -85,13 +86,14 @@ def read_from_dat(file, delimiter):
     return data
 
 
-def read_from_file(file, delimiter):
+def read_from_file(file, delimiter, header=True):
     """
     Method to read data from a file.
 
     Args:
         file (`str`):               File path + file name to a .TDMS or .txt file.
         delimiter (`str`):          Delimiter used in the data file to separate columns
+        header (`bool`):            True if file has a header. False otherwise
 
     Returns:
         data (`pandas data frame`):  Returns data structured in a pandas data frame.
@@ -103,11 +105,11 @@ def read_from_file(file, delimiter):
     elif p.suffix == '.dat':
         data = read_from_dat(file, delimiter)
     elif p.suffix == '.txt':
-        data = read_from_text(file, delimiter, 0)
+        data = read_from_text(file, delimiter, None, header)
     elif p.suffix == '':
-        data = read_from_text(file, delimiter, 0)
+        data = read_from_text(file, delimiter, None, header)
     elif p.suffix == '.csv':
-        data = read_from_text(file, delimiter, 0)
+        data = read_from_text(file, delimiter, None, header)
 
     # Check how many columns we have. For PLL we expect only 2 (minimal) or 7 (default TDMS file). For Cont.Sweep we
     # expect 256 columns. Reshape to correct format if needed.
