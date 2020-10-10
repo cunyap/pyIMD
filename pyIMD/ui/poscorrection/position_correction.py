@@ -127,11 +127,11 @@ class PositionCorrectionUI(QMainWindow):
         self.gridLayout.addWidget(self.slider, 1, 1)
         self.gridLayout.addWidget(self.graphicsLayoutWidget, 0, 2)
 
-        self.start_time_spin_box.setValue(1)
-        self.start_time_spin_box.setRange(1, self.bookKeeper.num_timepoints - 1)
+        self.start_time_spin_box.setValue(0)
+        self.start_time_spin_box.setRange(0, 2147483647)
         self.end_time_spin_box.setValue(self.bookKeeper.num_timepoints)
         self.end_time_spin_box.setRange(1, self.bookKeeper.num_timepoints)
-        self.measurements_spin_box.setRange(1, 100000000)
+        self.measurements_spin_box.setRange(1, 2147483647)
         self.initialize_item_lists(self.bookKeeper.num_timepoints)
         self.initialize_offset_dataframe(self.bookKeeper.num_timepoints)
         self.graphicsView = self.view
@@ -314,8 +314,8 @@ class PositionCorrectionUI(QMainWindow):
             image_list = [None] * len(self.image_file_names)
             self.refresh_images()
 
-            self.start_time_spin_box.setValue(1)
-            self.start_time_spin_box.setRange(1, len(image_list))
+            self.start_time_spin_box.setValue(0)
+            # self.start_time_spin_box.setRange(1, len(image_list))
             self.end_time_spin_box.setValue(len(image_list))
             self.end_time_spin_box.setRange(1, len(image_list))
             self.imageDirEdit.setText(os.path.dirname(self.image_file_names[0]))
