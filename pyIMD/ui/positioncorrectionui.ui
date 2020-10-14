@@ -51,9 +51,9 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>2</number>
         </property>
-        <widget class="QWidget" name="tabWidgetPage1" native="true">
+        <widget class="QWidget" name="tabWidgetPage1">
          <attribute name="title">
           <string>1. Load images</string>
          </attribute>
@@ -89,11 +89,8 @@
            </layout>
           </item>
          </layout>
-         <zorder>loadImagesBtn</zorder>
-         <zorder>imageDirEdit</zorder>
-         <zorder>gridLayoutWidget</zorder>
         </widget>
-        <widget class="QWidget" name="tabWidgetPage2" native="true">
+        <widget class="QWidget" name="tabWidgetPage2">
          <attribute name="title">
           <string/>
          </attribute>
@@ -110,27 +107,60 @@
            </layout>
           </item>
          </layout>
-         <zorder>verticalLayoutWidget</zorder>
-         <zorder>label</zorder>
         </widget>
-        <widget class="QWidget" name="tabWidgetPage3" native="true">
+        <widget class="QWidget" name="tabWidgetPage3">
          <attribute name="title">
           <string>3. Compute tip offset</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
            <layout class="QGridLayout" name="gridLayout_6">
-            <item row="4" column="0">
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="is_zero_outside_box">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="no_measurements_label">
+              <property name="text">
+               <string>Number of measurement points
+per image interval:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="end_time_spin_box"/>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="start_time_spin_box"/>
+            </item>
+            <item row="6" column="0" colspan="2">
+             <widget class="QTableView" name="tableView"/>
+            </item>
+            <item row="5" column="1">
+             <widget class="QPushButton" name="loadOffsetsBtn">
+              <property name="text">
+               <string>Load tip offsets</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
              <widget class="QPushButton" name="calcOffsetBtn">
               <property name="text">
                <string>Compute tip offset</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="1">
-             <widget class="QPushButton" name="loadOffsetsBtn">
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>Load tip offsets</string>
+               <string>Set data outside correction 
+to zero:</string>
               </property>
              </widget>
             </item>
@@ -142,17 +172,6 @@ points):</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="no_measurements_label">
-              <property name="text">
-               <string>Number of measurement points
-per image interval:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QSpinBox" name="start_time_spin_box"/>
-            </item>
             <item row="1" column="0">
              <widget class="QLabel" name="end_time_label">
               <property name="text">
@@ -160,38 +179,14 @@ per image interval:</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QSpinBox" name="measurements_spin_box"/>
-            </item>
-            <item row="1" column="1">
-             <widget class="QSpinBox" name="end_time_spin_box"/>
-            </item>
-            <item row="5" column="0" colspan="2">
-             <widget class="QTableView" name="tableView"/>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>Set data outside correction 
-to zero:</string>
-              </property>
-             </widget>
-            </item>
             <item row="3" column="1">
-             <widget class="QCheckBox" name="is_zero_outside_box">
-              <property name="text">
-               <string/>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
+             <widget class="QDoubleSpinBox" name="measurements_spin_box"/>
             </item>
            </layout>
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="tabWidgetPage4" native="true">
+        <widget class="QWidget" name="tabWidgetPage4">
          <attribute name="title">
           <string/>
          </attribute>
