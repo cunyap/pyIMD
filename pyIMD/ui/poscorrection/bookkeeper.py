@@ -11,6 +11,8 @@
 # *******************************************************************************/
 
 from pyIMD.ui.resource_path import resource_path
+from pyIMD.ui.poscorrection.compositeLine import CompositeLine
+from pyIMD.ui.poscorrection.compositePolygon import CompositePolygon
 from pathlib import Path
 
 
@@ -86,26 +88,67 @@ class BookKeeper:
         """
         self.compositePolygons[self.timepoint] = compositePolygon
 
-    def copyPreviousCompositePolygon(self):
+    def copyPreviousCompositePolygon(self, scene):
         """
         copy previous CompositePolygon and CompositeLine at current timepoint.
         """
-        if self.timepoint >= 1:
-            # Copy previous polygon
-            self.compositePolygons[self.timepoint] = self.compositePolygons[self.timepoint - 1]
-            # Copy previous line
-            self.compositeLines[self.timepoint] = self.compositeLines[self.timepoint - 1]
 
-    def addCompositePolygonAllTime(self):
+        if self.timepoint >= 1:
+
+            previous_polygon = self.compositePolygons[self.timepoint - 1]
+            previous_line = self.compositeLines[self.timepoint - 1]
+
+            # Create a new CompositePolygon instance
+            new_composite_polygon = CompositePolygon()
+            new_composite_polygon.addToScene(scene)
+
+            # Copy the vertices from current polygon
+            items = previous_polygon._polygon_item.polygon_vertex_items
+            for item in items:
+                new_composite_polygon._polygon_item.add_vertex(item.pos())
+
+            # Create a new CompositePolygon instance
+            new_composite_line = CompositeLine(previous_line.pos)
+            # Copy the vertices from current line
+            new_composite_line._line.setLine(previous_line._line.line().p1().x(), previous_line._line.line().p1().y(),
+                                             previous_line._line.line().p2().x(), previous_line._line.line().p2().y())
+            new_composite_line._vertexA.setPos(previous_line._vertexA.scenePos())
+            new_composite_line._vertexB.setPos(previous_line._vertexB.scenePos())
+
+            # Copy previous polygon
+            self.compositePolygons[self.timepoint] = new_composite_polygon
+            # Copy previous line
+            self.compositeLines[self.timepoint] = new_composite_line
+
+    def addCompositePolygonAllTime(self, scene):
         """
         add current CompositePolygon and CompositeLine at all timepoint.
         """
 
         current_polygon = self.compositePolygons[self.timepoint]
         current_line = self.compositeLines[self.timepoint]
+
         for ix, item in enumerate(self.compositePolygons):
-            self.compositePolygons[ix] = current_polygon
-            self.compositeLines[ix] = current_line
+            # Create a new CompositePolygon instance
+            new_composite_polygon = CompositePolygon()
+            new_composite_polygon.addToScene(scene)
+
+            # Copy the vertices from current polygon
+            items = current_polygon._polygon_item.polygon_vertex_items
+            for item in items:
+                new_composite_polygon._polygon_item.add_vertex(item.pos())
+
+            # Create a new CompositePolygon instance
+            new_composite_line = CompositeLine(current_line.pos)
+            # Copy the vertices from current line
+            new_composite_line._line.setLine(current_line._line.line().p1().x(), current_line._line.line().p1().y(),
+                                             current_line._line.line().p2().x(), current_line._line.line().p2().y())
+            new_composite_line._vertexA.setPos(current_line._vertexA.scenePos())
+            new_composite_line._vertexB.setPos(current_line._vertexB.scenePos())
+
+            # Add the new polygon to the list
+            self.compositePolygons[ix] = new_composite_polygon
+            self.compositeLines[ix] = new_composite_line
 
     def removeCompositePolygon(self):
         """

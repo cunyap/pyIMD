@@ -345,11 +345,11 @@ class PositionCorrectionUI(QMainWindow):
     def on_copy_cell_shape(self):
         self.scene.removeCompositePolygon()
         self.scene.removeCompositeLine()
-        self.bookKeeper.copyPreviousCompositePolygon()
+        self.bookKeeper.copyPreviousCompositePolygon(self.scene)
         self.redraw_scene()
 
     def on_copy_all_cell_shapes(self):
-        self.bookKeeper.addCompositePolygonAllTime()
+        self.bookKeeper.addCompositePolygonAllTime(self.scene)
         self.redraw_scene()
 
     def on_delete_cell_shape(self):
