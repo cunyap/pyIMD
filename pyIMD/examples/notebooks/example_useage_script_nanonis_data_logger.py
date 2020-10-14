@@ -31,5 +31,5 @@ imd.print_pyimd_project()
 imd.save_pyimd_project("/pyIMD/examples/data/nanonis_data_logger/pyIMDProjectName.xml")
 
 # Run the inertial mass determination
-imd.run_intertial_mass_determination()
+imd.run_inertial_mass_determination()
 

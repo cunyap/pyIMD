@@ -49,9 +49,12 @@ class CompositePolygon:
             self._scene.addItem(self._polygon_item)
             for vertex in self._polygon_item.polygon_vertex_items:
                 self._scene.addItem(vertex)
-            cm = self.getCenterOfMass()
-            if cm is not None:
-                self._scene.addItem(Circle(cm.x(), cm.y()))
+
+            # @todo add it to polygon such that its position refreshes with moving the items
+            # Draw center of mass to scene (static)
+            # cm = self.getCenterOfMass()
+            # if cm is not None:
+            #     self._scene.addItem(Circle(cm.x(), cm.y()))
 
     def getCenterOfMass(self):
         return self._polygon_item.updateCenterOfMass()

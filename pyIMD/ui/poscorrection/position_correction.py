@@ -60,17 +60,17 @@ class PositionCorrectionUI(QMainWindow):
 
         uic.loadUi(resource_path(str(Path('ui', 'positioncorrectionui.ui'))), self)
         self.setWindowTitle('pyIMD :: Position Correction')
-        self.draw_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-01.png')))),
+        self.draw_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
                                                   'Draw new cantilever tip reference line', self)
-        self.delete_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-01.png')))),
+        self.delete_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-06.png')))),
                                                   'Delete current cantilever tip reference line', self)
-        self.draw_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+        self.draw_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-01.png')))),
                                                 'Draw new cell outline', self)
-        self.copy_previous_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+        self.copy_previous_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-03.png')))),
                                                 'Copy cell outline and reference line from previous timepoint', self)
-        self.copy_all_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+        self.copy_all_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-04.png')))),
                                                 'Copy current cell outline  and reference line to all timepoints', self)
-        self.delete_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
+        self.delete_cell_outline_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-05.png')))),
                                                 'Delete current cell outline', self)
         self.draw_reference_line_action.triggered.connect(self.on_new_reference_line)
         self.delete_reference_line_action.triggered.connect(self.on_delete_reference_line)
@@ -127,11 +127,11 @@ class PositionCorrectionUI(QMainWindow):
         self.gridLayout.addWidget(self.slider, 1, 1)
         self.gridLayout.addWidget(self.graphicsLayoutWidget, 0, 2)
 
-        self.start_time_spin_box.setValue(1)
-        self.start_time_spin_box.setRange(1, self.bookKeeper.num_timepoints - 1)
+        self.start_time_spin_box.setValue(0)
+        self.start_time_spin_box.setRange(0, 2147483647)
         self.end_time_spin_box.setValue(self.bookKeeper.num_timepoints)
         self.end_time_spin_box.setRange(1, self.bookKeeper.num_timepoints)
-        self.measurements_spin_box.setRange(1, 100000000)
+        self.measurements_spin_box.setRange(1, 2147483647)
         self.initialize_item_lists(self.bookKeeper.num_timepoints)
         self.initialize_offset_dataframe(self.bookKeeper.num_timepoints)
         self.graphicsView = self.view
@@ -285,10 +285,10 @@ class PositionCorrectionUI(QMainWindow):
     def on_save(self):
         try:
             data_to_send = self.data_results
-            print(data_to_send)
-            print(self.image_file_names)
+            # print(data_to_send)
+            # print(self.image_file_names)
             data_to_send['Image frames'] = self.image_file_names
-            print('VAL', self.start_time_spin_box.value(), type(self.start_time_spin_box.value()))
+            # print('VAL', self.start_time_spin_box.value(), type(self.start_time_spin_box.value()))
             self.send_data(data_to_send, self.start_time_spin_box.value(), self.end_time_spin_box.value(),
                            self.measurements_spin_box.value(), self.is_zero_outside_box.isChecked())
             self.close()
@@ -314,8 +314,8 @@ class PositionCorrectionUI(QMainWindow):
             image_list = [None] * len(self.image_file_names)
             self.refresh_images()
 
-            self.start_time_spin_box.setValue(1)
-            self.start_time_spin_box.setRange(1, len(image_list))
+            self.start_time_spin_box.setValue(0)
+            # self.start_time_spin_box.setRange(1, len(image_list))
             self.end_time_spin_box.setValue(len(image_list))
             self.end_time_spin_box.setRange(1, len(image_list))
             self.imageDirEdit.setText(os.path.dirname(self.image_file_names[0]))
@@ -345,11 +345,11 @@ class PositionCorrectionUI(QMainWindow):
     def on_copy_cell_shape(self):
         self.scene.removeCompositePolygon()
         self.scene.removeCompositeLine()
-        self.bookKeeper.copyPreviousCompositePolygon()
+        self.bookKeeper.copyPreviousCompositePolygon(self.scene)
         self.redraw_scene()
 
     def on_copy_all_cell_shapes(self):
-        self.bookKeeper.addCompositePolygonAllTime()
+        self.bookKeeper.addCompositePolygonAllTime(self.scene)
         self.redraw_scene()
 
     def on_delete_cell_shape(self):
@@ -386,6 +386,7 @@ class PositionCorrectionUI(QMainWindow):
 
             currentCompositePolygon = self.bookKeeper.getCurrentCompositePolygon()
             if currentCompositePolygon is None:
+
                 # Create a CompositePolygon
                 currentCompositePolygon = CompositePolygon()
 
@@ -407,20 +408,15 @@ class PositionCorrectionUI(QMainWindow):
     @staticmethod
     def calculate_norm_cell_to_reference(p1, p2, centroid):
         try:
-            print(p1, p2, centroid)
-            denominator = abs((p2.y() - p1.y()) * centroid.x() - (p2.x() - p1.x()) * centroid.y() + p2.x() * p1.y() - p2.y() * p1.x())
-            print(denominator)
+            denominator = abs((p2.y() - p1.y()) * centroid.x() - (p2.x() - p1.x()) * centroid.y() + p2.x() * p1.y() -
+                              p2.y() * p1.x())
             numerator = math.sqrt((p2.y() - p1.y()) ** 2 + (p2.x() - p1.x()) ** 2)
-            print(numerator)
             distance = denominator/numerator
-            print(distance)
             return distance
         except Exception as e:
             print(e)
 
     def calculate_tip_offset(self):
-        print(self.tip_offset_list)
-
         try:
             res = self.show_popup()
 
@@ -543,23 +539,19 @@ class PositionCorrectionUI(QMainWindow):
         filled_cells_idx = [i for i in range(len(polygons)) if polygons[i] != None]
         empty_reference_line_idx = [i for i in range(len(lines)) if lines[i] == None]
         filled_reference_line_idx = [i for i in range(len(lines)) if lines[i] != None]
-        # @todo compare lengths of empty indices. The shorter one neets to be corrected i.e add new item. if equal check
-        # if first elemnt is filled out if not ask user to do so. if last is not len(list) notify if he wants to
-        # interpolate only until there. note that rest data will be set to zero. if accept we calc otherwise we let correct before interpolating
+
         # @todo if results are loaded display center of mass with point and draw lines programmatically. find out how.
-        # (check if image stack equals length of list, then draw, otherwise just display table)
-        # @todo implement save button.
-        # @todo implement use offset in main pyimd
-        # @ todo dowload first from git and do merge before commiting anything
+        # @todo (check if image stack equals length of list, then draw, otherwise just display table)
+
         # print('filled cell idx', filled_cells_idx)
         # print('filled ref idx', filled_reference_line_idx)
         # print('length cells', len(filled_cells_idx), 'length ref', len(filled_reference_line_idx))
-        print('___________________________')
-        print('Empty Cells', empty_cells_idx)
-        print('Empty ref', empty_reference_line_idx)
-        print('filled Cells', filled_cells_idx)
-        print('filled ref', filled_reference_line_idx)
-        print(len(self.cells_list) )
+        # print('___________________________')
+        # print('Empty Cells', empty_cells_idx)
+        # print('Empty ref', empty_reference_line_idx)
+        # print('filled Cells', filled_cells_idx)
+        # print('filled ref', filled_reference_line_idx)
+        # print(len(self.cells_list))
         if not filled_cells_idx and not filled_reference_line_idx:
             msgBox.setText("Please draw at least a cell outline and reference line.")
             msgBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Cancel)

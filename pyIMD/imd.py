@@ -232,7 +232,8 @@ class InertialMassDetermination(QObject):
                 self.data_pre_start_with_cell = read_from_text(self.settings.pre_start_with_cell_path,
                                                                self.settings.text_data_delimiter,
                                                                self.settings.read_text_data_from_line)
-                self.data_measured = read_from_file(self.settings.measurements_path, self.settings.text_data_delimiter)
+                self.data_measured = read_from_file(self.settings.measurements_path, self.settings.text_data_delimiter,
+                                                    header=None)
                 self.logger.info('Done reading all files')
                 # Convert data to the correct units
                 self.convert_data()
@@ -265,34 +266,40 @@ class InertialMassDetermination(QObject):
                     self.logger.info('Position correction factor: {}'.format(self.position_correction_factor))
                 else:
                     # Interpolated according to data
-                    pos_data = pd.DataFrame(np.linspace(1, len(self.settings.cell_offsets),
-                                                            len(self.settings.cell_offsets)), columns={'frames'})
+                    pos_data = pd.DataFrame(np.arange(1, len(self.settings.cell_offsets) + 1), columns={'frames'})
                     pos_data['offsets'] = self.settings.cell_offsets
-                    print(pos_data)
-                    pos_data['indices'] = ((pos_data['frames'] - 1) * self.settings.number_of_data_per_frame) + \
-                                         self.settings.image_start_index
-                    print(pos_data)
-                    max_frame = pos_data['indices'].iloc[-1]
-                    print(max_frame)
-                    new_x = np.linspace(self.settings.image_start_index, max_frame, (max_frame-
-                                                                                     self.settings.image_start_index) +1)
+                    pos_data['indices'] = ((pos_data['frames'].values - 1) * self.settings.number_of_data_per_frame) + \
+                                          self.settings.image_start_index
+
+                    # Define min and max index into data_measured. self.settings.image_start_index is the data_measured
+                    # index which corresponds to the first image frame. If started simultaneously it is 0. If delayed by
+                    # 1 second it would be number of measured data during 1 second.
+                    min_data_idx = self.settings.image_start_index
+                    # Max index into data_measured corresponds to the last image frame times number_of_data_per_frame
+                    max_data_idx = (self.settings.position_correction_end_frame - 1) * \
+                                self.settings.number_of_data_per_frame
+                    # Clip max_data_idx if higher than actual measured data. i. e if image_start_index is not 0
+                    if max_data_idx > len(self.data_measured):
+                        max_data_idx = len(self.data_measured)
+
+                    new_x = np.linspace(min_data_idx, max_data_idx, pos_data['indices'].iloc[-1])
                     interp_offsets = np.interp(new_x, pos_data['indices'], pos_data['offsets'])
+
+                    # Define how measurements outside correction are treated. Either set to zero or left uncorrected
                     if self.settings.is_zero_outside_correction_range:
                         position_correction_factor = np.zeros(len(self.data_measured))
                     else:
                         position_correction_factor = np.ones(len(self.data_measured))
                     interp_offsets_corrected = calculate_position_correction(interp_offsets,
                                                                              self.settings.cantilever_length)
-                    print(interp_offsets_corrected)
-                    print('len data', len(self.data_measured))
-                    print('len interp offset corrected', len(interp_offsets_corrected))
-                    print('from', int(self.settings.image_start_index))
-                    print('to', int(max_frame +self.settings.image_start_index))
-                    position_correction_factor[int(self.settings.image_start_index):int(max_frame + 1)] = \
-                        interp_offsets_corrected * self.settings.conversion_factor_px_to_mum
+
+                    interp_offsets_corrected_converted = interp_offsets_corrected * \
+                                                         self.settings.conversion_factor_px_to_mum
+
+                    position_correction_factor[int(min_data_idx):int(max_data_idx)] = \
+                        interp_offsets_corrected_converted[int(min_data_idx):int(max_data_idx)]
                     self.position_correction_factor = position_correction_factor
-                    print(position_correction_factor[296])
-                    print('done with pos correction')
+                    self.logger.info('Done with position correction calculation')
 
                 # Calc resonance frequency for pre start data with cell attached to cantilever
                 self.resonance_freq_pre_start_with_cell, self.fit_param_pre_start_with_cell = \

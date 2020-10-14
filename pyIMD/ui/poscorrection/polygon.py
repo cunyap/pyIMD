@@ -14,6 +14,7 @@ from PyQt5.QtGui import QColor, QPen, QCursor, QPolygonF, QBrush
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsPolygonItem
 from PyQt5.QtCore import Qt, QPointF
 from pyIMD.ui.poscorrection.polygonVertex import PolygonVertex
+from pyIMD.ui.poscorrection.circle import Circle
 
 
 class Polygon(QGraphicsPolygonItem):
@@ -32,6 +33,7 @@ class Polygon(QGraphicsPolygonItem):
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.polygon_vertex_items = []
+        self.center_of_mass_item = []
 
         self._centerOfMass = None
 
@@ -40,12 +42,16 @@ class Polygon(QGraphicsPolygonItem):
 
     def add_vertex(self, p):
         self.polygon_vertices.append(p)
-        print(p)
         self.setPolygon(QPolygonF(self.polygon_vertices))
         item = PolygonVertex(p.x(), p.y(), 7, len(self.polygon_vertices) - 1, self, self._composite)
         self.scene().addItem(item)
         self.polygon_vertex_items.append(item)
         item.setPos(p)
+        # if len(self.polygon_vertex_items) == 1:
+        #     item = Circle(p.x(), p.y(), 7, 'CoM', self._composite)
+        #     self.scene().addItem(item)
+        #     self.center_of_mass_item.append(item)
+        #     item.setPos(p)
         self.updateCenterOfMass()
 
     def remove_last_vertex(self):
@@ -68,7 +74,6 @@ class Polygon(QGraphicsPolygonItem):
             item.setEnabled(False)
             item.setPos(pos)
             item.setEnabled(True)
-            self.updateCenterOfMass()
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionHasChanged:
@@ -96,4 +101,10 @@ class Polygon(QGraphicsPolygonItem):
         x = sum_x / len(self.polygon_vertex_items)
         y = sum_y / len(self.polygon_vertex_items)
         self._centerOfMass = QPointF(x, y)
+
+        # Move the center of mass item on the scene
+        # item = self.center_of_mass_item[0]
+        # item.setEnabled(False)
+        # item.setPos(self.mapFromScene(self._centerOfMass))
+        # item.setEnabled(True)
         return self._centerOfMass

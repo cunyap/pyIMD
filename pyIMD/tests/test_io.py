@@ -44,7 +44,7 @@ class TestIO(TestCase):
 
         df = pd.DataFrame()
         for f in files:
-            df = df.append(read_from_file(f, delimiter))
+            df = df.append(read_from_file(f, delimiter, header=0))
 
         self.assertEqual(df.shape, (10, 7))
 
@@ -59,7 +59,7 @@ class TestIO(TestCase):
 
         df = pd.DataFrame()
         for f in files:
-            df = df.append(read_from_file(f, delimiter))
+            df = df.append(read_from_file(f, delimiter, header=0))
 
         self.assertEqual(df.shape, (10, 7))
 
@@ -74,7 +74,7 @@ class TestIO(TestCase):
 
         df = pd.DataFrame()
         for f in files:
-            df = df.append(read_from_file(f, delimiter))
+            df = df.append(read_from_file(f, delimiter, header=0))
 
         self.assertEqual(df.shape, (10, 7))
 
@@ -87,7 +87,7 @@ class TestIO(TestCase):
 
         df = pd.DataFrame()
         for f in files:
-            df = df.append(read_from_file(f, delimiter))
+            df = df.append(read_from_file(f, delimiter, header=0))
 
         self.assertEqual(df.shape, (10, 7))
 
