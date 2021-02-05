@@ -14,5 +14,6 @@ mpl_data_dir = exec_statement(
     "import matplotlib; print(matplotlib._get_data_path())")
 
 datas = [
-    (mpl_data_dir, "mpl-data"),
-]
+    (mpl_data_dir, "matplotlib/mpl-data"),
+	(mpl_data_dir, "mpl-data")
+] # mpl-data is deprecated in Matplotlib 3.1 use matplotlib/mpl-data instead
