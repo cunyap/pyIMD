@@ -34,7 +34,7 @@ imd.print_pyimd_project()
 # imd.show_settings_dialog()
 
 # Run the inertial mass determination
-imd.run_intertial_mass_determination()
+imd.run_inertial_mass_determination()
 
 # Save the config file for the project / experiment for documentation purpose or to re-run with different /
 # same parameter later
