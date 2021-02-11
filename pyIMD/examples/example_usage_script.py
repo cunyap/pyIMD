@@ -45,4 +45,4 @@ imd.load_pyimd_project("/pyIMD/examples/data/show_case/pyIMDProjectName.xml")
 # change a parameter i.e
 imd.settings.figure_format = 'png'
 # and run again
-imd.run_intertial_mass_determination()
+imd.run_inertial_mass_determination()
