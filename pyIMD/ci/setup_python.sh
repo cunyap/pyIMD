@@ -38,16 +38,16 @@ curl https://bootstrap.pypa.io/get-pip.py -o ${DLD}/get-pip.py
 python ${DLD}/get-pip.py
 
 # install virtualenv
-python -m pip install virtualenv
+python3 -m pip install virtualenv
 
 # create virtualenv
 PP="/Library/Frameworks/Python.framework/Versions/${MPV::3}/bin/python${MPV::3}"
-python -m virtualenv --no-site-packages -p $PP .env
+python3 -m virtualenv --no-site-packages -p $PP .env
 source .env/bin/activate
 
 # install ca certificates
 # (resolves [SSL: CERTIFICATE_VERIFY_FAILED])
-pip install certifi
+pip3 install certifi
 /Applications/Python\ ${MPV::3}/Install\ Certificates.command
 
 # go back
