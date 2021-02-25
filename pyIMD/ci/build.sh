@@ -15,7 +15,7 @@ if [[ $1 == "linux" ]];
         echo $(ls /usr/lib64/*)
         echo $(ls /usr/lib64/libGL*)
         # Install the package
-        pip install .
+        pip3 install .
 
         if [[ $2 == 3.5 ]];
             then
@@ -33,8 +33,8 @@ if [[ $1 == "linux" ]];
         echo "# Done with compiling"
 else
     cd /Users/travis/build/cunyap/pyIMD/
-    pip install PyQt5==5.10.1
-    pip install .
+    pip3 install PyQt5>=5.10.1
+    pip3 install .
 
     if [[ $2 == 3.5 ]];
         then
