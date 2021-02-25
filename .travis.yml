@@ -35,26 +35,6 @@ matrix:
     env:
       - PYTHON_VERSION=3.7
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    brew install swig;
-    curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci;
-    source ./macports-ci install;
-    fi
-
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    yes | sudo port install python$PYTHON_VERSION;
-    yes | sudo port install py$PYTHON_VERSION-pip;
-    sudo port select --set python3 python$PYTHON_VERSION;
-    sudo port select --set pip pip$PYTHON_VERSION;
-    pip install pyinstaller --user;
-    export PATH=$PATH:/Users/travis/Library/Python/$PYTHON_VERSION/bin;
-    fi
-
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    python3 --version;
-    pip --version;
-    pyinstaller --version;
-    fi
   - source ./pyIMD/ci/setup_python.sh $PYTHON_VERSION 'osx'
 install:
 - bash $TRAVIS_BUILD_DIR/pyIMD/ci/build.sh $TRAVIS_OS_NAME $PYTHON_VERSION
