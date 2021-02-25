@@ -54,7 +54,7 @@ deploy:
   description: 'pyIMD compiled portable.'
   provider: GitHub
   auth_token:
-    secure: eqinvomItGqw80qUWYaayQYKxNfHlgX/eetx6trpD+Nm2O8S0jT80C2TPdrFaTh/
+    secure: XKl/DdYszrEi4+J1Stj9g5tSf8DeOc54FPoLtDMXdW8Yduka7l4rADK+aJDjkNvR
   artifact: portable
   draft: false
   prerelease: true
