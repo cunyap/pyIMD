@@ -1,7 +1,7 @@
 # validation page for appveyor config: https://ci.appveyor.com/tools/validate-yaml
 
 # Not building Visual Studio project
-build: off
+# build: off
 
 environment:
   matrix:
