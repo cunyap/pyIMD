@@ -44,6 +44,8 @@ script:
   $TRAVIS_BUILD_DIR/pyIMD/tests -t $TRAVIS_BUILD_DIR/pyIMD/tests\nelse \n  python
   -m unittest discover -s $TRAVIS_BUILD_DIR/pyIMD/tests -t $TRAVIS_BUILD_DIR/pyIMD/tests\nfi
   \n"
+services:
+- xvfb
 deploy:
   provider: releases
   api_key:
