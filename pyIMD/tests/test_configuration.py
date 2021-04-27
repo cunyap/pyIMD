@@ -49,7 +49,7 @@ class TestConfiguration(TestCase):
                            '_cell_center_of_mass_x': [], '_cell_center_of_mass_y': [], '_ref_line_1_x': [],
                            '_ref_line_1_y': [], '_ref_line_2_x': [], '_ref_line_2_y': [], '_image_start_index': 0,
                            '_position_correction_end_frame': 0, '_number_of_data_per_frame': 0,
-                           '_is_zero_outside_correction_range': True}
+                           '_is_zero_outside_correction_range': True, '_area': [], 'position_correction_data': []}
 
         self.assertEqual(self.settings.__dict__, expected_result)
 
@@ -82,7 +82,8 @@ class TestConfiguration(TestCase):
                            '_image_files': [], '_cell_offsets': [], '_cell_center_of_mass_x': [],
                            '_cell_center_of_mass_y': [], '_ref_line_1_x': [], '_ref_line_1_y': [], '_ref_line_2_x': [],
                            '_ref_line_2_y': [], '_image_start_index': 0, '_position_correction_end_frame': 0,
-                           '_number_of_data_per_frame': 0, '_is_zero_outside_correction_range': True}
+                           '_number_of_data_per_frame': 0, '_is_zero_outside_correction_range': True,
+                           '_area': [], 'position_correction_data': []}
 
         print(os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_B.txt"))
         file_path1 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_B.txt")
@@ -125,7 +126,8 @@ class TestConfigurationIO(XmlTestCase):
                            '_image_files': [], '_cell_offsets': [], '_cell_center_of_mass_x': [],
                            '_cell_center_of_mass_y': [], '_ref_line_1_x': [], '_ref_line_1_y': [], '_ref_line_2_x': [],
                            '_ref_line_2_y': [], '_image_start_index': 0, '_position_correction_end_frame': 0,
-                           '_number_of_data_per_frame': 0, '_is_zero_outside_correction_range': True}
+                           '_number_of_data_per_frame': 0, '_is_zero_outside_correction_range': True,
+                           '_area': [], 'position_correction_data': []}
 
         file_path1 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_B.txt")
         file_path2 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_A.txt")
@@ -214,7 +216,8 @@ class TestConfigurationIO(XmlTestCase):
                                45.16, '_image_files': [], '_cell_offsets': [], '_cell_center_of_mass_x': [],
                            '_cell_center_of_mass_y': [], '_ref_line_1_x': [], '_ref_line_1_y': [], '_ref_line_2_x': [],
                            '_ref_line_2_y': [], '_image_start_index': 0, '_position_correction_end_frame': 0,
-                           '_number_of_data_per_frame': 0, '_is_zero_outside_correction_range': True}
+                           '_number_of_data_per_frame': 0, '_is_zero_outside_correction_range': True,
+                           '_area': [], 'position_correction_data': []}
 
         self.assertEqual(settings.__dict__, expected_result)
 

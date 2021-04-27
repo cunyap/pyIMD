@@ -41,7 +41,7 @@ class PositionCorrectionUI(QMainWindow):
 
     """
 
-    save_to_main_signal = pyqtSignal(object, int, int, int, bool, name='save_to_main_signal')
+    save_to_main_signal = pyqtSignal(object, list, int, int, int, bool, name='save_to_main_signal')
     """
     pyqtSignal sends the data to the main window
 
@@ -87,6 +87,7 @@ class PositionCorrectionUI(QMainWindow):
         self.tip_offset_list = []
         self.data = []
         self.data_results = []
+        self.correction_objects = []
         self.image = None
         self.image_filter_data = None
 
@@ -247,8 +248,6 @@ class PositionCorrectionUI(QMainWindow):
     def onMouseMoved(self, point):
         p = self.graphicsView.view.mapSceneToView(point)
         self.last_position = p
-        # print(point)
-        # print("{}-{}".format(p.x(), p.y()))
 
     def initialize_item_lists(self, length):
         self.reference_line_list = [None] * length
@@ -285,20 +284,19 @@ class PositionCorrectionUI(QMainWindow):
     def on_save(self):
         try:
             data_to_send = self.data_results
-            # print(data_to_send)
-            # print(self.image_file_names)
             data_to_send['Image frames'] = self.image_file_names
-            # print('VAL', self.start_time_spin_box.value(), type(self.start_time_spin_box.value()))
-            self.send_data(data_to_send, self.start_time_spin_box.value(), self.end_time_spin_box.value(),
-                           self.measurements_spin_box.value(), self.is_zero_outside_box.isChecked())
+            self.send_data(data_to_send, self.correction_objects, self.start_time_spin_box.value(),
+                           self.end_time_spin_box.value(), self.measurements_spin_box.value(),
+                           self.is_zero_outside_box.isChecked())
             self.close()
         except Exception as e:
             self.statusBar.showMessage("Error: {}".format(e))
 
-    def load_project(self, image_files, data, image_start_index, position_correction_end_frame,
+    def load_project(self, image_files, data, correction_objects, image_start_index, position_correction_end_frame,
                      number_of_data_per_frame, is_zero_outside_correction_range):
         self.image_file_names = image_files
         self.load_image_files()
+        self.load_objects(correction_objects)
         self.initialize_offset_table(data)
         self.export_results_btn.setEnabled(True)
         self.save_btn.setEnabled(True)
@@ -325,6 +323,41 @@ class PositionCorrectionUI(QMainWindow):
         except Exception as e:
             self.statusBar.showMessage("Error: {}".format(e))
         self.initialize_item_lists(len(self.image_file_names))
+
+    def load_objects(self, correction_objects):
+
+        self.correction_objects = correction_objects
+        for el in self.correction_objects:
+            self.bookKeeper.timepoint = el["image_frame"] - 1
+
+            # Remove an already existing CompositeLine and Polygon object
+            self.scene.removeCompositeLine()
+            self.scene.removeCompositePolygon()
+
+            # Create a CompositeLine (it manages three interdependent QGraphicsWidgets)
+            compositeLine = CompositeLine(QPointF(32, 7))
+            # Add the CompositeLine to the Scene. Note that the CompositeLine is
+            # not a QGraphicsItem itself and cannot be added to the Scene directly.
+            compositeLine.addToScene(self.scene)
+
+            # Add the Line
+            compositeLine._line.setLine(el["tip_reference_line"]['x'][0], el["tip_reference_line"]['y'][0],
+                                        el["tip_reference_line"]['x'][1], el["tip_reference_line"]['y'][1])
+            compositeLine._vertexA.setPos(el["tip_reference_line"]['x'][0], el["tip_reference_line"]['y'][0])
+            compositeLine._vertexB.setPos(el["tip_reference_line"]['x'][1], el["tip_reference_line"]['y'][1])
+
+            # Create a CompositePolygon
+            currentCompositePolygon = CompositePolygon()
+            # Add the CompositeLine to the Scene. Note that the CompositeLine is
+            # not a QGraphicsItem itself and cannot be added to the Scene directly.
+            currentCompositePolygon.addToScene(self.scene)
+            # Add the vertices
+            for v in range(0, len(el["object"]['x'])):
+                currentCompositePolygon._polygon_item.add_vertex(QPointF(el["object"]['x'][v], el["object"]['y'][v]))
+
+            # Store the objects
+            self.bookKeeper.addCompositeLine(compositeLine)
+            self.bookKeeper.addCompositePolygon(currentCompositePolygon)
 
     def on_open_position_correction_file(self):
         file, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileNames()", "",
@@ -424,16 +457,14 @@ class PositionCorrectionUI(QMainWindow):
 
                 line_list = self.bookKeeper.getAllCompositeLine()
                 polygon_list = self.bookKeeper.getAllCompositePolygon()
+                # Reset list
+                self.correction_objects = []
 
                 for i in range(len(line_list)):
+                    composite_object = {}
+
                     # If we have a pair of a reference line and a cell outline on a particular image we compute its
                     # offset
-                    # @todo: Implement functionality if a pyIMD xml project is loaded such that one can continue
-                    # working in the editor.
-                    # Idea: load center of mass into center of mass list, load offsets from table or do nothing.
-                    # Have priority if a shape is drawn overwrite table!
-                    # @todo Implement positioning of cell center and reference line if project is loaded.
-                    # Check how line can be drawn programmatically.
                     if line_list[i] and polygon_list[i]:
 
                         polygon_list[i].getCenterOfMass()
@@ -442,49 +473,52 @@ class PositionCorrectionUI(QMainWindow):
                         p1 = line_list[i]._vertexA.pos()
                         p2 = line_list[i]._vertexB.pos()
 
+                        polygon_list[i]._polygon_item.updateArea()
+                        area = polygon_list[i]._polygon_item._area
+
                         self.tip_offset_list[i] = self.calculate_norm_cell_to_reference(p2, p1, comP)
-                        self.data[i] = [i + 1, self.tip_offset_list[i], comP.x(), comP.y(), p2.x(), p2.y(), p1.y(),
-                                        p1.y()]
+                        self.data[i] = [i + 1, self.tip_offset_list[i], comP.x(), comP.y(), p2.x(), p2.y(), p1.x(),
+                                        p1.y(), area]
+                        # Collect the drawn objects per image frame into a list as dict.
+                        composite_object.update({'image_frame': i + 1, 'tip_offset': self.tip_offset_list[i],
+                                                 'object_area': area, 'object_center_of_mass': {'x': comP.x(),
+                                                                                                'y': comP.y()},
+                                                 'tip_reference_line': {'x': [p2.x(), p1.x()], 'y': [p2.y(), p1.y()]},
+                                                 'object': polygon_list[i]._polygon_item.vertices_to_dict()})
+                        self.correction_objects.append(composite_object)
 
                 # Interpolate missing values for image frames in between if not for all image frame a reference and cell
                 # outline was drawn. Note at least on the first and last frame the reference and cell outline has to be
                 #  present.
-                # print(self.tip_offset_list)
                 if self.tip_offset_list:
-                    # print('data', self.data)
                     df = pd.DataFrame(self.data, columns=['Image frame', 'Tip offset', 'Centroid x', 'Centroid y',
                                                           'Ref point1 x', 'Ref point1 y', 'Ref point2 x',
-                                                          'Ref point2 y'])
+                                                          'Ref point2 y', 'Area'])
 
-                    # print('vaaaaaal', self.start_time_spin_box.value())
                     x_values = np.linspace(self.start_time_spin_box.value(), self.end_time_spin_box.value(), (
                             self.end_time_spin_box.value()-self.start_time_spin_box.value())+1)
-                    # print('len data', len(self.data))
-                    # print('xvalues', x_values)
                     ddf = df.dropna()
-                    # print(len(ddf))
                     if len(ddf) >= 1:
-                        interp = np.interp(x_values, ddf.iloc[:, 0], ddf.iloc[:, 1])
-                        # print(interp)
-                        # print(len(df))
-                        # print((self.start_time_spin_box.value()), self.end_time_spin_box.value())
+                        interp_offsets = np.interp(x_values, ddf.iloc[:, 0], ddf.iloc[:, 1])
+                        interp_area = np.interp(x_values, ddf.iloc[:, 0], ddf.iloc[:, 8])
                         indicies = [int(x_values[i]-1) for i in range(len(x_values))]
-                        # print(indicies)
-                        # print(indicies[0], indicies[-1])
-                        # print(indicies)
-                        df.iloc[indicies, 1] = interp  # Note be very careful where to insert as depending on the interp range we do not
-                        #  evaluate the whole data.
+
+                        df.iloc[indicies, 1] = interp_offsets  # Note be very careful where to insert as depending on
+                        # the interp range we do not evaluate the whole data.
+                        df.iloc[indicies, 8] = interp_area  # Note be very careful where to insert as depending on the
+                        # interp range we do not evaluate the whole data.
                         self.initialize_offset_table(df)
                         # Do interpolation of the values.
-                        # The interpolated values have then to be matched and re interpolated to the length of the measurement data.
-                        # Image frequency has to be know or at least how many measurements one had between the first image and next
+                        # The interpolated values have then to be matched and re interpolated to the length of the
+                        # measurement data.
+                        # Image frequency has to be know or at least how many measurements one had between the first
+                        # image and next
                         # one.
                         self.export_results_btn.setEnabled(True)
                         self.save_btn.setEnabled(True)
                         self.statusBar.showMessage('Done!')
                     else:
                         self.statusBar.showMessage('Error: Check if all items are drawn correctly.')
-                        # print('Interpolating')
 
         except Exception as e:
             print('Exception:', e)
@@ -503,13 +537,14 @@ class PositionCorrectionUI(QMainWindow):
         except Exception as e:
             self.statusBar.showMessage('Error:', e)
 
-    def send_data(self, data, start_idx, end_idx, interval, condition):
+    def send_data(self, data, correction_objects, start_idx, end_idx, interval, condition):
 
         """
         Sends the data to the main window
 
         Args:
-            data (`PandasDataframe`):                   Data to be sent to the console.
+            data (`PandasDataframe`):                   Data to be sent to the mainwindow.
+            correction_objects (`list`):                Position correction data to be sent to the mainwindow.
             start_idx (`int`):                          Measured data index which corresponds to first image frame.
             end_idx (`int`):                            Image frame until which the position should be computed.
             interval (`int`):                           Number of measurement points between two image frames.
@@ -517,14 +552,15 @@ class PositionCorrectionUI(QMainWindow):
                                                         corrected range
 
         Returns:
-            data (`PandasDataframe`):                   Data to be sent to the console
+            data (`PandasDataframe`):                   Data to be sent to the mainwindow
+            correction_objects (`list`):                Position correction data to be sent to the mainwindow.
             start_idx (`int`):                          Measured data index which corresponds to first image frame.
             end_idx (`int`):                            Image frame until which the position should be computed.
             interval (`int`):                           Number of measurement points between two image frames.
             condition (`bool`):                         Bool determining if data will be set to zero outside of position
                                                         corrected range
         """
-        self.save_to_main_signal.emit(data, start_idx, end_idx, interval, condition)
+        self.save_to_main_signal.emit(data, correction_objects, start_idx, end_idx, interval, condition)
 
     def show_popup(self):
         msgBox = QMessageBox()
@@ -540,18 +576,6 @@ class PositionCorrectionUI(QMainWindow):
         empty_reference_line_idx = [i for i in range(len(lines)) if lines[i] == None]
         filled_reference_line_idx = [i for i in range(len(lines)) if lines[i] != None]
 
-        # @todo if results are loaded display center of mass with point and draw lines programmatically. find out how.
-        # @todo (check if image stack equals length of list, then draw, otherwise just display table)
-
-        # print('filled cell idx', filled_cells_idx)
-        # print('filled ref idx', filled_reference_line_idx)
-        # print('length cells', len(filled_cells_idx), 'length ref', len(filled_reference_line_idx))
-        # print('___________________________')
-        # print('Empty Cells', empty_cells_idx)
-        # print('Empty ref', empty_reference_line_idx)
-        # print('filled Cells', filled_cells_idx)
-        # print('filled ref', filled_reference_line_idx)
-        # print(len(self.cells_list))
         if not filled_cells_idx and not filled_reference_line_idx:
             msgBox.setText("Please draw at least a cell outline and reference line.")
             msgBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Cancel)

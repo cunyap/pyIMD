@@ -284,20 +284,27 @@ class InertialMassDetermination(QObject):
 
                     new_x = np.linspace(min_data_idx, max_data_idx, pos_data['indices'].iloc[-1])
                     interp_offsets = np.interp(new_x, pos_data['indices'], pos_data['offsets'])
+                    interp_area = np.interp(new_x, pos_data['indices'], self.settings.area)
+                    print(interp_area)
 
                     # Define how measurements outside correction are treated. Either set to zero or left uncorrected
                     if self.settings.is_zero_outside_correction_range:
                         position_correction_factor = np.zeros(len(self.data_measured))
+                        area = np.zeros(len(self.data_measured))
                     else:
                         position_correction_factor = np.ones(len(self.data_measured))
+                        area = np.ones(len(self.data_measured))
                     interp_offsets_corrected = calculate_position_correction(interp_offsets,
                                                                              self.settings.cantilever_length)
 
                     interp_offsets_corrected_converted = interp_offsets_corrected * \
                                                          self.settings.conversion_factor_px_to_mum
+                    interp_area_converted = interp_area * self.settings.conversion_factor_px_to_mum
 
                     position_correction_factor[int(min_data_idx):int(max_data_idx)] = \
                         interp_offsets_corrected_converted[int(min_data_idx):int(max_data_idx)]
+                    area[int(min_data_idx):int(max_data_idx)] = \
+                        interp_area_converted[int(min_data_idx):int(max_data_idx)]
                     self.position_correction_factor = position_correction_factor
                     self.logger.info('Done with position correction calculation')
 
@@ -358,6 +365,8 @@ class InertialMassDetermination(QObject):
                                                    DataFrame(self.calculated_cell_mass, columns=['Mass (ng)'])], axis=1)
                     calculated_cell_mass['Mean mass (ng)'] = calculated_cell_mass['Mass (ng)'].rolling(
                         window=self.settings.rolling_window_size).mean()
+                    if len(self.settings.cell_offsets) > 0:
+                        calculated_cell_mass['Object area (um_sq)'] = area
 
                     self.calculated_cell_mass = calculated_cell_mass
                     figure_cell_mass = plot_mass(calculated_cell_mass, self.settings.figure_plot_every_nth_point)
@@ -406,7 +415,9 @@ class InertialMassDetermination(QObject):
                                                    DataFrame(self.calculated_cell_mass, columns=['Mass (ng)'])], axis=1)
                     calculated_cell_mass['Mean mass (ng)'] = calculated_cell_mass['Mass (ng)'].rolling(
                         window=self.settings.rolling_window_size).mean()
-                    self.calculated_cell_mass = calculated_cell_mass
+                    calculated_cell_mass['Object area (um_sq)'] = area
+                    if len(self.settings.cell_offsets) > 0:
+                        self.calculated_cell_mass = calculated_cell_mass
 
                     figure_cell_mass = plot_mass(calculated_cell_mass, self.settings.figure_plot_every_nth_point)
                     self.logger.info('Start writing figure to disk')

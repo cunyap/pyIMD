@@ -10,6 +10,7 @@
 # *     Andreas P. Cuny - initial API and final implementation
 # *******************************************************************************/
 
+import alphashape
 from PyQt5.QtGui import QColor, QPen, QCursor, QPolygonF, QBrush
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsPolygonItem
 from PyQt5.QtCore import Qt, QPointF
@@ -36,6 +37,7 @@ class Polygon(QGraphicsPolygonItem):
         self.center_of_mass_item = []
 
         self._centerOfMass = None
+        self._area = None
 
     def number_of_points(self):
         return len(self.polygon_vertex_items)
@@ -108,3 +110,19 @@ class Polygon(QGraphicsPolygonItem):
         # item.setPos(self.mapFromScene(self._centerOfMass))
         # item.setEnabled(True)
         return self._centerOfMass
+
+    def updateArea(self):
+        coordinates = []
+        for item in self.polygon_vertices:
+            coordinates.append((item.x(), item.y()))
+        alpha_shape = alphashape.alphashape(coordinates)
+        self._area = alpha_shape.area
+
+    def vertices_to_dict(self):
+        x = []
+        y = []
+        for item in self.polygon_vertices:
+            x.append(item.x())
+            y.append(item.y())
+        vertices = {'x': x, 'y': y}
+        return vertices

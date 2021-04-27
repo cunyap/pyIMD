@@ -92,6 +92,7 @@ class IMDWindow(QtWidgets.QMainWindow):
         self.file_list = []
         self.current_batch_project_file = []
         self.received_data = []
+        self.correction_objects = []
         self.last_selected_path = ''
         self.show()
         self.console_edit.setReadOnly(True)
@@ -630,10 +631,12 @@ class IMDWindow(QtWidgets.QMainWindow):
                 self.imd.settings.ref_line_1_y = self.received_data["Ref point1 y"].tolist()
                 self.imd.settings.ref_line_2_x = self.received_data["Ref point2 x"].tolist()
                 self.imd.settings.ref_line_2_y = self.received_data["Ref point2 y"].tolist()
+                self.imd.settings.area = self.received_data["Area"].tolist()
                 self.imd.settings.image_start_index = self.image_start_index
                 self.imd.settings.position_correction_end_frame = self.position_correction_end_frame
                 self.imd.settings.number_of_data_per_frame = self.number_of_data_per_frame
                 self.imd.settings.is_zero_outside_correction_range = self.is_zero_outside_correction_range
+                self.imd.settings.position_correction_data = self.correction_objects
 
         except Exception as e:
             self.print_to_console("Error during settings synchronization: " + str(e))
@@ -669,23 +672,21 @@ class IMDWindow(QtWidgets.QMainWindow):
         """
         self.print_to_console(text)
 
-    @pyqtSlot(object, int, int, int, bool, name="handle_received_data")
-    def handle_received_data(self, data, start_idx, end_idx, interval, condition):
+    @pyqtSlot(object, list, int, int, int, bool, name="handle_received_data")
+    def handle_received_data(self, data, correction_objects, start_idx, end_idx, interval, condition):
         """
         Implementation of the handle_received_data slot.
 
         Args:
             data (`PandasDataframe`):       Data as pandas data frame received from Position Correction instance.
         """
-        # print(data, start_idx, end_idx, interval, condition)
         self.received_data = data
+        self.correction_objects = correction_objects
         self.image_start_index = start_idx
         self.position_correction_end_frame = end_idx
         self.number_of_data_per_frame = interval
         self.is_zero_outside_correction_range = condition
         self.sync_settings()
-        # print(self.imd.settings.__dict__)
-        # print(self.imd.settings.cell_center_of_mass_x)
 
     def save_project(self):
         """
@@ -697,15 +698,11 @@ class IMDWindow(QtWidgets.QMainWindow):
 
         file_dialog = QFileDialog()
         project_file_dir = file_dialog.getSaveFileName(self)
-        print(project_file_dir)
         if len(project_file_dir[0]) > 0:
             try:
                 # Make sure all ui settings are in sync with imd settings.
-                print('berfore sync')
                 self.sync_settings()
-                print('before save')
                 self.imd.save_pyimd_project(project_file_dir[0])
-                print('after save')
 
                 self.print_to_console("Project saved successfully")
             except Exception as e:
@@ -800,13 +797,14 @@ class IMDWindow(QtWidgets.QMainWindow):
                         data.append([i, self.imd.settings.cell_offsets[i], self.imd.settings.cell_center_of_mass_x[i],
                                 self.imd.settings.cell_center_of_mass_y[i], self.imd.settings.ref_line_1_x[i],
                                 self.imd.settings.ref_line_1_y[i], self.imd.settings.ref_line_2_x[i],
-                                self.imd.settings.ref_line_2_y[i]])
+                                self.imd.settings.ref_line_2_y[i], self.imd.settings.area[i]])
                         df = pd.DataFrame(data, columns=['Image frame', 'Tip offset', 'Centroid x', 'Centroid y',
-                                                         'Ref point1 x', 'Ref point1 y', 'Ref point2 x', 'Ref point2 y'])
+                                                         'Ref point1 x', 'Ref point1 y', 'Ref point2 x', 'Ref point2 y',
+                                                         'Area'])
                     self.executor.submit(self.position_correction.load_project(
-                        self.imd.settings.image_files, df, self.imd.settings.image_start_index,
-                        self.imd.settings.position_correction_end_frame, self.imd.settings.number_of_data_per_frame,
-                        self.imd.settings.is_zero_outside_correction_range))
+                        self.imd.settings.image_files, df, self.imd.settings.position_correction_data,
+                        self.imd.settings.image_start_index, self.imd.settings.position_correction_end_frame,
+                        self.imd.settings.number_of_data_per_frame, self.imd.settings.is_zero_outside_correction_range))
 
                 self.print_to_console("Project {} successfully opened".format(pathlib.Path(
                     selected_project_file[0]).name))

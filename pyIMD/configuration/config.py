@@ -9,6 +9,7 @@
 # *     Andreas P. Cuny - initial API and implementation
 # *******************************************************************************/
 
+import ast
 import operator
 import pathlib
 import xmltodict
@@ -61,6 +62,7 @@ class Settings(object):
         self.measurements_path = ''
         self.selected_files = []
         # Position correction parameters
+        self.position_correction_data = []
         self.image_files = []
         self.cell_offsets = []
         self.cell_center_of_mass_x = []
@@ -69,6 +71,7 @@ class Settings(object):
         self.ref_line_1_y = []
         self.ref_line_2_x = []
         self.ref_line_2_y = []
+        self.area = []
 
         self.image_start_index = 0
         self.position_correction_end_frame = 0
@@ -641,6 +644,20 @@ class Settings(object):
             raise Exception("Reference line point 2 y components should be a of type list.")
         self._ref_line_2_y = y
 
+    area = property(operator.attrgetter('_area'))
+    """
+      Parameter defining the area of the polygon for the given image files.
+
+      Args:
+          area (`list`):    List of the area of the polygon for the given image files.
+    """
+
+    @area.setter
+    def area(self, a):
+        if not (type(a) == list):
+            raise Exception("Polygon area should be a of type list.")
+        self._area = a
+
     image_start_index = property(operator.attrgetter('_image_start_index'))
     """
       Parameter defining the image start data index for the given image files if experiment and imaging were not started 
@@ -769,6 +786,7 @@ class Settings(object):
                                                      series in image_files.
             ref_line_2_y (`list`):                   List of reference line point 2 y components for the given image
                                                      series in image_files.
+            area (`list`):                           List of area of polygon for the given image series in image_files.
             image_start_index (`int`):               Measured data index which corresponds to first image frame
             position_correction_end_frame (`int`):   Image frame until which the position should be computed
             number_of_data_per_frame (`int`):        Number of measurement points between two image frames.
@@ -847,12 +865,25 @@ class Settings(object):
                         setattr(self, key, self.parse_list(value['RefLine2X']))
                     elif key == 'ref_line_2_y':
                         setattr(self, key, self.parse_list(value['RefLine2Y']))
+                    elif key == 'area':
+                        setattr(self, key, self.parse_list(value['Area']))
+                    elif key == 'PositionCorrection':
+                        for p_key, p_value in value.items():
+                            if p_key == 'image_files':
+                                setattr(self, p_key, p_value['File'])
+                            elif p_key == 'CorrectionObject':
+                                data = []
+                                for el in p_value:
+                                    tmp = {}
+                                    for o_key, o_value in el.items():
+                                        tmp[o_key] = ast.literal_eval(o_value)
+                                    data.append(tmp)
+                                setattr(self, 'position_correction_data', data)
                     else:
                         setattr(self, key, yaml.safe_load(json.loads(json.dumps(value))))
 
                 except Exception as e:
                     print('Project settings error:', e)
-
             return "Project {} successfully opened".format(pathlib.Path(file_path).name)
         except Exception as e:
             return "Error during opening project: " + str(e)
@@ -893,6 +924,7 @@ class Settings(object):
             # Add the SubElements
             general_settings = etree.SubElement(root, 'GeneralSettings')
             project_settings = etree.SubElement(root, 'ProjectSettings')
+            position_correction = etree.SubElement(project_settings, 'PositionCorrection')
 
             # Add the SubSubElements for the general settings
             figure_format = etree.SubElement(general_settings, 'figure_format')
@@ -928,7 +960,7 @@ class Settings(object):
             data_measured = etree.SubElement(project_settings, 'measurements_path')
             calculation_mode = etree.SubElement(project_settings, 'calculation_mode')
             selected_files = etree.SubElement(project_settings, 'selected_files')
-            image_files = etree.SubElement(project_settings, 'image_files')
+            image_files = etree.SubElement(position_correction, 'image_files')
             cell_offsets = etree.SubElement(project_settings, 'cell_offsets')
             cell_center_of_mass_x = etree.SubElement(project_settings, 'cell_center_of_mass_x')
             cell_center_of_mass_y = etree.SubElement(project_settings, 'cell_center_of_mass_y')
@@ -936,6 +968,7 @@ class Settings(object):
             ref_line_1_y = etree.SubElement(project_settings, 'ref_line_1_y')
             ref_line_2_x = etree.SubElement(project_settings, 'ref_line_2_x')
             ref_line_2_y = etree.SubElement(project_settings, 'ref_line_2_y')
+            area = etree.SubElement(project_settings, 'area')
             image_start_index = etree.SubElement(project_settings, 'image_start_index')
             position_correction_end_frame = etree.SubElement(project_settings, 'position_correction_end_frame')
             number_of_data_per_frame = etree.SubElement(project_settings, 'number_of_data_per_frame')
@@ -994,6 +1027,7 @@ class Settings(object):
             ref_line_1_y_dict = {}
             ref_line_2_x_dict = {}
             ref_line_2_y_dict = {}
+            area_dict = {}
             for i in range(0, len(self.cell_offsets)):
                 cell_offsets_dict["string{0}".format(i)] = etree.SubElement(cell_offsets, 'Offset')
                 cell_offsets_dict["string{0}".format(i)].text = str(self.cell_offsets[i])
@@ -1011,6 +1045,15 @@ class Settings(object):
                 ref_line_2_x_dict["string{0}".format(i)].text = str(self.ref_line_2_x[i])
                 ref_line_2_y_dict["string{0}".format(i)] = etree.SubElement(ref_line_2_y, 'RefLine2Y')
                 ref_line_2_y_dict["string{0}".format(i)].text = str(self.ref_line_2_y[i])
+                area_dict["string{0}".format(i)] = etree.SubElement(area, 'Area')
+                area_dict["string{0}".format(i)].text = str(self.area[i])
+
+            for i in self.position_correction_data:
+                correction_object = etree.SubElement(position_correction, 'CorrectionObject')
+                element_dict = {}
+                for key in i.keys():
+                    element_dict["string{0}".format(i)] = etree.SubElement(correction_object, key)
+                    element_dict["string{0}".format(i)].text = str(i[key])
 
             # Check for correct file suffix. If not provided by user or wrong suffix given correct it
             if not pathlib.Path(file_path).suffix:
