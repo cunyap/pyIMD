@@ -212,7 +212,7 @@ class PositionCorrectionUI(QMainWindow):
         self.scene.display_image(self.bookKeeper.getCurrentImagePath(), image_filter=self.image_filter_data)
         self.colorLegendItem.setImageItem(self.scene.image)
         self.scene.image.setLookupTable(self.lut)
-        self.colorLegendItem.resetColorLevels()
+        self.colorLegendItem.autoScaleFromImage()  # note in version 1.0.0 its called resetColorLevels()
         self.refresh_items_on_scene()
 
     def on_histogram_changed(self):

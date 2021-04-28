@@ -196,7 +196,7 @@ def get_image_filter(filter_box):
 
 
 def filter_image(image, filter_data):
-    print(image, 'image')
+
     if filter_data['filter_name'] == 'Gamma Correction':
         filtered_img = exposure.adjust_gamma(image, filter_data['filter_param']['gamma'],
                                              filter_data['filter_param']['gain'])
