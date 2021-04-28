@@ -1,3 +1,6 @@
+- 0.1.0
+            - New feature: Estimate object area (i.e. cell area in position correction dialog and append to results and project files.
+            - New feature: Drawn objects in position correction and be saved and loaded trough project file.
 - 0.0.9
             - New feature: New tool to estimate the cell position on the cantilever tip from images.
 - 0.0.8
@@ -5,7 +8,7 @@
             - New feature: New tool to concatenate single *.dat files into a single .csv file.
 - 0.0.7
             - New feature: Added settings dialog functionality for pyIMD console use to facilitate update of parameters.
-            - Fixed Bug: Settings to project file synchronisation.
+            - Fixed Bug:     Settings to project file synchronisation.
             - Restructuring and simplification of code base.
             - Increased unittest code coverage.
 - 0.0.6
@@ -18,8 +21,8 @@
 - 0.0.3
             - New feature: Added image montage generator to pyIMD.plotting.figures
             - New feature: Batch project calculation
-            - Fixed Bug: Reading project xml file did not recognize file delimiter properly.
+            - Fixed Bug:     Reading project xml file did not recognize file delimiter properly.
 - 0.0.2
-            - Fixed Bug: Opening multiple projects in a row did not update drop down menus.
+            - Fixed Bug:     Opening multiple projects in a row did not update drop down menus.
 - 0.0.1
             - Alpha Pre release.
