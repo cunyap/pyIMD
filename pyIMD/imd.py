@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import QApplication
 from pandas import concat, DataFrame
 from pyIMD.configuration.config import Settings
 from pyIMD.ui.settings import SettingsDialog
-from pyIMD.io.read_from_disk import read_from_text, read_from_file
+from pyIMD.io.read_from_disk import read_from_text, read_from_file, read_tdms_metadata
 from pyIMD.io.write_to_disk import write_to_disk_as, write_concat_data
 from pyIMD.analysis.calculations import calculate_mass
 from pyIMD.analysis.calculations import calculate_resonance_frequencies, calculate_position_correction
@@ -47,6 +47,9 @@ class InertialMassDetermination(QObject):
         self.settings = Settings()
         self.settings_dialog = None
         self._has_valid_configuration = 0
+        self._freq_idx = None
+        self._phase_idx = None
+        self._n_rows = None
         # Initialize data properties
         self.data_pre_start_no_cell = []
         self.data_pre_start_with_cell = []
@@ -235,6 +238,10 @@ class InertialMassDetermination(QObject):
                 self.data_measured = read_from_file(self.settings.measurements_path, self.settings.text_data_delimiter,
                                                     header=None)
                 self.logger.info('Done reading all files')
+                if self.settings.calculation_mode == 'Cont.Sweep':
+                    # In case of sweep determine the correct rows
+                    self._freq_idx, self._phase_idx, self._n_rows = self.get_sweep_data_index()
+
                 # Convert data to the correct units
                 self.convert_data()
                 self.logger.info('Done converting units')
@@ -265,6 +272,7 @@ class InertialMassDetermination(QObject):
                                                                                     self.settings.cantilever_length)
                     self.logger.info('Position correction factor: {}'.format(self.position_correction_factor))
                 else:
+                    self.logger.info('Start position correction interpolation')
                     # Interpolated according to data
                     pos_data = pd.DataFrame(np.arange(1, len(self.settings.cell_offsets) + 1), columns={'frames'})
                     pos_data['offsets'] = self.settings.cell_offsets
@@ -276,24 +284,35 @@ class InertialMassDetermination(QObject):
                     # 1 second it would be number of measured data during 1 second.
                     min_data_idx = self.settings.image_start_index
                     # Max index into data_measured corresponds to the last image frame times number_of_data_per_frame
-                    max_data_idx = (self.settings.position_correction_end_frame - 1) * \
-                                self.settings.number_of_data_per_frame
+                    max_data_idx = int((self.settings.position_correction_end_frame - 1) * \
+                                self.settings.number_of_data_per_frame)
                     # Clip max_data_idx if higher than actual measured data. i. e if image_start_index is not 0
-                    if max_data_idx > len(self.data_measured):
-                        max_data_idx = len(self.data_measured)
 
-                    new_x = np.linspace(min_data_idx, max_data_idx, pos_data['indices'].iloc[-1])
+                    if self.settings.calculation_mode == 'Cont.Sweep':
+                        if max_data_idx > len(self.data_measured) / self._n_rows:
+                            max_data_idx = int(len(self.data_measured) / self._n_rows)
+                    else:
+                        if max_data_idx > len(self.data_measured):
+                            max_data_idx = len(self.data_measured)
+
+                    new_x = np.linspace(min_data_idx, max_data_idx, int(pos_data['indices'].iloc[-1]))
                     interp_offsets = np.interp(new_x, pos_data['indices'], pos_data['offsets'])
                     interp_area = np.interp(new_x, pos_data['indices'], self.settings.area)
-                    print(interp_area)
 
                     # Define how measurements outside correction are treated. Either set to zero or left uncorrected
                     if self.settings.is_zero_outside_correction_range:
                         position_correction_factor = np.zeros(len(self.data_measured))
-                        area = np.zeros(len(self.data_measured))
+                        if self.settings.calculation_mode == 'Cont.Sweep':
+                            area = np.zeros(int(len(self.data_measured) / self._n_rows))
+                        else:
+                            area = np.zeros(len(self.data_measured))
                     else:
                         position_correction_factor = np.ones(len(self.data_measured))
-                        area = np.ones(len(self.data_measured))
+                        if self.settings.calculation_mode == 'Cont.Sweep':
+                            area = np.ones(int(len(self.data_measured) / self._n_rows))
+                        else:
+                            area = np.ones(len(self.data_measured))
+
                     interp_offsets_corrected = calculate_position_correction(interp_offsets,
                                                                              self.settings.cantilever_length)
 
@@ -337,10 +356,12 @@ class InertialMassDetermination(QObject):
                 if self.settings.calculation_mode == 'Cont.Sweep':
                     # The continuous sweep mode
                     self.calculated_cell_mass = []
-                    for iSweep in trange(0, len(self.data_measured), 3):
+                    for iSweep in trange(0, len(self.data_measured), self._n_rows):
+                        # Default is 3 (Amplitude, Phase, Frequency) [+0, +1, +2]
+                        # Old Cytomass LabView is 4 (Offset, Frequency, Amplitude, Phase) [+0, +3, +1]
                         # Calc resonance frequency and function fit for the ith sweep (iSweep)
-                        res_freq, param = calculate_resonance_frequencies(self.data_measured.iloc[iSweep + 2, 0:255],
-                                                                          self.data_measured.iloc[iSweep + 1, 0:255],
+                        res_freq, param = calculate_resonance_frequencies(self.data_measured.iloc[iSweep + self._freq_idx, 0:255],
+                                                                          self.data_measured.iloc[iSweep + self._phase_idx, 0:255],
                                                                           self.settings.initial_parameter_guess,
                                                                           self.settings.lower_parameter_bounds,
                                                                           self.settings.upper_parameter_bounds)
@@ -355,16 +376,16 @@ class InertialMassDetermination(QObject):
                             self.calculated_cell_mass.append(mass * self.position_correction_factor[iSweep])
 
                         if np.remainder(iSweep, 300) == 0:
-                            figure_i_sweep = plot_fitting(self.data_measured.iloc[iSweep + 2, 0:255],
-                                                          self.data_measured.iloc[iSweep + 1, 0:255], res_freq, param)
+                            figure_i_sweep = plot_fitting(self.data_measured.iloc[iSweep + self._freq_idx, 0:255].astype(float),
+                                                          self.data_measured.iloc[iSweep + self._phase_idx, 0:255].astype(float), res_freq, param)
                             write_to_disk_as(self.settings.figure_format, figure_i_sweep,
                                              '{}'.format(self.result_folder + os.sep + 'ResFreqSweep_' + str(iSweep)))
-
-                    calculated_cell_mass = concat([(self.data_measured.iloc[0:int(((len(self.data_measured)) / 3)-1), 256] -
+                    calculated_cell_mass = concat([(self.data_measured.iloc[0:int(((len(self.data_measured)) / self._n_rows)-1), 256] -
                                                     self.data_measured.iloc[0, 256]) / 3600,
                                                    DataFrame(self.calculated_cell_mass, columns=['Mass (ng)'])], axis=1)
                     calculated_cell_mass['Mean mass (ng)'] = calculated_cell_mass['Mass (ng)'].rolling(
                         window=self.settings.rolling_window_size).mean()
+
                     if len(self.settings.cell_offsets) > 0:
                         calculated_cell_mass['Object area (um_sq)'] = area
 
@@ -415,8 +436,8 @@ class InertialMassDetermination(QObject):
                                                    DataFrame(self.calculated_cell_mass, columns=['Mass (ng)'])], axis=1)
                     calculated_cell_mass['Mean mass (ng)'] = calculated_cell_mass['Mass (ng)'].rolling(
                         window=self.settings.rolling_window_size).mean()
-                    calculated_cell_mass['Object area (um_sq)'] = area
                     if len(self.settings.cell_offsets) > 0:
+                        calculated_cell_mass['Object area (um_sq)'] = area
                         self.calculated_cell_mass = calculated_cell_mass
 
                     figure_cell_mass = plot_mass(calculated_cell_mass, self.settings.figure_plot_every_nth_point)
@@ -473,17 +494,91 @@ class InertialMassDetermination(QObject):
                 getattr(self, str(iAttribute)).iloc[:, 2] = getattr(self, str(iAttribute)).iloc[:, 2] / \
                                                             self.settings.conversion_factor_deg_to_rad
             if self.settings.calculation_mode == 'Cont.Sweep':
-                for iSweep in range(0, len(self.data_measured), 3):
+                # Default is 3 (Amplitude, Phase, Frequency) [+0, +1, +2]
+                # New is 4 (Offset, Frequency, Amplitude, Phase) [+0, +3, +1]
+                for iSweep in range(0, len(self.data_measured), self._n_rows):
                     # Calc resonance frequency and function fit for the ith sweep (iSweep)
-                    self.data_measured.iloc[iSweep + 1, 0:255] = self.data_measured.iloc[iSweep + 1, 0:255] / \
-                                                                 self.settings.conversion_factor_deg_to_rad
-                    self.data_measured.iloc[iSweep + 2, 0:255] = self.data_measured.iloc[iSweep + 2, 0:255] / \
-                                                                 self.settings.conversion_factor_hz_to_khz
+                    self.data_measured.iloc[iSweep + self._phase_idx, 0:255] = \
+                        self.data_measured.iloc[iSweep + self._phase_idx, 0:255] / \
+                        self.settings.conversion_factor_deg_to_rad
+                    self.data_measured.iloc[iSweep + self._freq_idx, 0:255] = \
+                        self.data_measured.iloc[iSweep + self._freq_idx, 0:255] / \
+                        self.settings.conversion_factor_hz_to_khz
             else:
                 self.data_measured.iloc[:, 5] = self.data_measured.iloc[:, 5] / self.settings.conversion_factor_deg_to_rad
                 self.data_measured.iloc[:, 6] = self.data_measured.iloc[:, 6] / self.settings.conversion_factor_hz_to_khz
         except Exception as e:
             self.logger.info("Error during data conversion: " + str(e))
+
+    def get_sweep_group_index(self, groups):
+        """
+        Returns the index of the tdms group called 'sweep data'.
+        """
+        for idx, group in enumerate(groups):
+            if group.name.lower() == 'sweep data':
+                return idx
+
+    def get_sweep_data_index(self):
+        """
+        Returns the row indices of the tdms group 'sweep data' for the frequency, phase and the number of expected
+        rows that keep repeating.
+        I.e if there are 3 defined column names Amplitude, Phase, Frequency followed by Untitled 3 ... n we would expect
+        this data to be in junks of 3 rows.
+        """
+        groups = read_tdms_metadata(self.settings.measurements_path)
+        group_channel = groups[self.get_sweep_group_index(groups)]
+        # Ideally all researchers using cytomass would stick to a naming convention. If not add your fancy name to the
+        # list below that corresponds to the center frequency.
+        freq_str = '\t'.join(['Frequency', 'Center', 'Centre', 'Center Frequency', 'Centre Frequency'])
+        # Ideally all researchers using cytomass would stick to a naming convention. If not add your fancy name to the
+        # list below that corresponds to the phase.
+        phase_str = '\t'.join(['Phase'])
+        amplitude_str = '\t'.join(['Amplitude', 'Amp\n'])
+        offset_str = '\t'.join(['Offset'])
+        other_column_name = 'Untitled'  # We use this to determine how many repeating rows we should expect.
+        # I.e if there are 3 defined column names Amplitude, Phase, Frequency followed by Untitled 3 ... n we would
+        # expect this data to be in junks of 3 rows.
+        n_rows = None
+        for idx, ch in enumerate(group_channel.channels()):
+            if ch.name.lower() in freq_str.lower():
+                freq_idx = idx
+            if ch.name.lower() in phase_str.lower():
+                phase_idx = idx
+            if ch.name.lower() in amplitude_str.lower():
+                amp_idx = idx
+            if ch.name.lower() in offset_str.lower():
+                offset_idx = idx
+            if ch.name.lower()[0:8] in other_column_name.lower():
+                if n_rows is None:
+                    n_rows = idx
+
+        # Data format of cytomass prototype that we need to convert
+        if n_rows == 4:
+            data = self.data_measured
+
+            sweeps = np.arange(0, len(data), n_rows)
+            data = concat([data.iloc[:, :], data.iloc[:, -1]], axis=1)
+
+            for iSweep in trange(0, len(data), n_rows):
+                data.iloc[iSweep + 2, 0:255] = data.iloc[iSweep + offset_idx, 0:255].astype(float) + \
+                                               data.iloc[iSweep + freq_idx, 0:255].astype(float)
+                data.iloc[iSweep + 1, 0:255] = data.iloc[iSweep + phase_idx, 0:255].astype(float)
+                data.iloc[iSweep + 0, 0:255] = data.iloc[iSweep + amp_idx, 0:255].astype(float)
+
+                data.iloc[int(iSweep/n_rows), 256] = ((data.iloc[int(iSweep/n_rows), 256].to_datetime64() - np.datetime64(
+                    '1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')).item()
+
+            times = data.iloc[:, 256]
+            data = data.drop(index=sweeps + 3)
+            data = data.reset_index(drop=True)
+            data.iloc[:, 256] = times
+            self.data_measured = data
+
+            # reset indices
+            freq_idx = 2
+            phase_idx = 1
+            n_rows = 3
+        return freq_idx, phase_idx, n_rows
 
     def concatenate_files(self, directory, time_interval, **kwargs):
         """
