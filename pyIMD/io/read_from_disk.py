@@ -120,3 +120,19 @@ def read_from_file(file, delimiter, header=0):
         data = df
 
     return data
+
+
+def read_tdms_metadata(file):
+    """
+    Method to read metadata from National Instruments technical data management streaming files (TDMS).
+
+    Args:
+        file (`str`):              File path + file name string.
+
+    Returns:
+        data (`pandas data frame`):  Returns metadata structured in groups.
+    """
+    tdms_file = TdmsFile.read_metadata(file)
+    metadata = tdms_file.groups()
+    return metadata
+
