@@ -634,7 +634,7 @@ class IMDWindow(QtWidgets.QMainWindow):
                 self.imd.settings.area = self.received_data["Area"].tolist()
                 self.imd.settings.image_start_index = self.image_start_index
                 self.imd.settings.position_correction_end_frame = self.position_correction_end_frame
-                self.imd.settings.number_of_data_per_frame = self.number_of_data_per_frame
+                self.imd.settings.number_of_data_per_frame = float(self.number_of_data_per_frame)
                 self.imd.settings.is_zero_outside_correction_range = self.is_zero_outside_correction_range
                 self.imd.settings.position_correction_data = self.correction_objects
 

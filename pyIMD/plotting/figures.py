@@ -34,7 +34,6 @@ def plot_fitting(x, y, resonance_frequency, parameter):
     Returns:
         p (`ggplot object`):                     Returns a ggplot object
     """
-
     y_fit = fit_function(x, resonance_frequency, parameter[0], parameter[1], parameter[2])
     y_fit.name = 'Phase fit'
     x.name = 'Frequency (kHz)'
@@ -120,6 +119,7 @@ def plot_mass(calculated_cell_mass, plot_every_nth_point):
     col_names[0] = 'Time (h)'
     calculated_cell_mass.columns = col_names
     calculated_cell_mass = calculated_cell_mass.iloc[::plot_every_nth_point, :]
+    calculated_cell_mass = calculated_cell_mass.astype(float)  # To make sure time is a float at this point
 
     # Plot data
     p = ggplot(aes(x=col_names[0], y=col_names[1]), data=calculated_cell_mass) + \

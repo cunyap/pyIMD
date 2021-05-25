@@ -75,7 +75,7 @@ class Settings(object):
 
         self.image_start_index = 0
         self.position_correction_end_frame = 0
-        self.number_of_data_per_frame = 0
+        self.number_of_data_per_frame = 0.0
         self.is_zero_outside_correction_range = True
 
     def __repr__(self):
@@ -693,13 +693,13 @@ class Settings(object):
       Parameter defining the number of acquired data points between two image frames.
 
       Args:
-          number_of_data_per_frame (`int`):    Number of acquired data points between two image frames.
+          number_of_data_per_frame (`float`):    Number of acquired data points between two image frames.
     """
 
     @number_of_data_per_frame.setter
     def number_of_data_per_frame(self, idx):
-        if not (type(idx) == int):
-            raise Exception("Number of data per frame should be a of type int.")
+        if not (type(idx) == float):
+            raise Exception("Number of data per frame should be a of type float.")
         self._number_of_data_per_frame = idx
 
     is_zero_outside_correction_range = property(operator.attrgetter('_is_zero_outside_correction_range'))
@@ -789,7 +789,7 @@ class Settings(object):
             area (`list`):                           List of area of polygon for the given image series in image_files.
             image_start_index (`int`):               Measured data index which corresponds to first image frame
             position_correction_end_frame (`int`):   Image frame until which the position should be computed
-            number_of_data_per_frame (`int`):        Number of measurement points between two image frames.
+            number_of_data_per_frame (`float`):        Number of measurement points between two image frames.
             is_zero_outside_correction_range (`bool`):Bool determining if data will be set to zero outside of position
                                                      corrected range
         """
