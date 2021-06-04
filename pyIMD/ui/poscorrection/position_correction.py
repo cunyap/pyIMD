@@ -15,7 +15,7 @@ import math
 import pandas as pd
 from PyQt5 import uic
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSignal, Qt, QAbstractTableModel, pyqtSlot
+from PyQt5.QtCore import pyqtSignal, Qt, QAbstractTableModel, pyqtSlot, QThread, QObject
 from PyQt5.Qt import QMainWindow, QApplication,  QPushButton, QSizePolicy, QTextDocumentFragment, QPointF
 from PyQt5.QtWidgets import QAction, QFileDialog, QProgressBar, QMessageBox, QSlider
 from pyIMD.configuration.defaults import *
@@ -147,7 +147,7 @@ class PositionCorrectionUI(QMainWindow):
 
         self.loadImagesBtn.clicked.connect(self.on_open_image_dir)
         self.loadOffsetsBtn.clicked.connect(self.on_open_position_correction_file)
-        self.calcOffsetBtn.clicked.connect(self.calculate_tip_offset)
+        self.calcOffsetBtn.clicked.connect(self.on_calculate_tip_offset)
         self.export_results_btn.pressed.connect(self.on_export_results)
         self.save_btn.pressed.connect(self.on_save)
 
@@ -438,91 +438,145 @@ class PositionCorrectionUI(QMainWindow):
         else:
             pass
 
-    @staticmethod
-    def calculate_norm_cell_to_reference(p1, p2, centroid):
-        try:
-            denominator = abs((p2.y() - p1.y()) * centroid.x() - (p2.x() - p1.x()) * centroid.y() + p2.x() * p1.y() -
-                              p2.y() * p1.x())
-            numerator = math.sqrt((p2.y() - p1.y()) ** 2 + (p2.x() - p1.x()) ** 2)
-            distance = denominator/numerator
-            return distance
-        except Exception as e:
-            print(e)
+    # @todo remove if testing is successful
+    # @staticmethod
+    # def calculate_norm_cell_to_reference(p1, p2, centroid):
+    #     try:
+    #         denominator = abs((p2.y() - p1.y()) * centroid.x() - (p2.x() - p1.x()) * centroid.y() + p2.x() * p1.y() -
+    #                           p2.y() * p1.x())
+    #         numerator = math.sqrt((p2.y() - p1.y()) ** 2 + (p2.x() - p1.x()) ** 2)
+    #         distance = denominator/numerator
+    #         return distance
+    #     except Exception as e:
+    #         print(e)
 
-    def calculate_tip_offset(self):
+    def on_calculate_tip_offset(self):
+        # Configuring separate thread
+        self.calculationThread = QThread()
+        self.tip_offset_thread = TipOffsetThread()
+        self.tip_offset_thread.moveToThread(self.calculationThread)
+
+        # Connecting the signals
+        if not self.calculationThread.isRunning():
+            self.calculationThread.start()
+        self.tip_offset_thread.params.connect(self.get_tip_offset_results)
+        self.tip_offset_thread.stopped.connect(self.done_calculate_tip_offset)
+        self.calculationThread.started.connect(self.tip_offset_thread.start)
+
         try:
             res = self.show_popup()
-
             if res == 0:
-
                 line_list = self.bookKeeper.getAllCompositeLine()
                 polygon_list = self.bookKeeper.getAllCompositePolygon()
-                # Reset list
-                self.correction_objects = []
-
-                for i in range(len(line_list)):
-                    composite_object = {}
-
-                    # If we have a pair of a reference line and a cell outline on a particular image we compute its
-                    # offset
-                    if line_list[i] and polygon_list[i]:
-
-                        polygon_list[i].getCenterOfMass()
-                        comP = polygon_list[i]._polygon_item._centerOfMass
-
-                        p1 = line_list[i]._vertexA.pos()
-                        p2 = line_list[i]._vertexB.pos()
-
-                        polygon_list[i]._polygon_item.updateArea()
-                        area = polygon_list[i]._polygon_item._area
-
-                        self.tip_offset_list[i] = self.calculate_norm_cell_to_reference(p2, p1, comP)
-                        self.data[i] = [i + 1, self.tip_offset_list[i], comP.x(), comP.y(), p2.x(), p2.y(), p1.x(),
-                                        p1.y(), area]
-                        # Collect the drawn objects per image frame into a list as dict.
-                        composite_object.update({'image_frame': i + 1, 'tip_offset': self.tip_offset_list[i],
-                                                 'object_area': area, 'object_center_of_mass': {'x': comP.x(),
-                                                                                                'y': comP.y()},
-                                                 'tip_reference_line': {'x': [p2.x(), p1.x()], 'y': [p2.y(), p1.y()]},
-                                                 'object': polygon_list[i]._polygon_item.vertices_to_dict()})
-                        self.correction_objects.append(composite_object)
-
-                # Interpolate missing values for image frames in between if not for all image frame a reference and cell
-                # outline was drawn. Note at least on the first and last frame the reference and cell outline has to be
-                #  present.
-                if self.tip_offset_list:
-                    df = pd.DataFrame(self.data, columns=['Image frame', 'Tip offset', 'Centroid x', 'Centroid y',
-                                                          'Ref point1 x', 'Ref point1 y', 'Ref point2 x',
-                                                          'Ref point2 y', 'Area'])
-
-                    x_values = np.linspace(self.start_time_spin_box.value(), self.end_time_spin_box.value(), (
-                            self.end_time_spin_box.value()-self.start_time_spin_box.value())+1)
-                    ddf = df.dropna()
-                    if len(ddf) >= 1:
-                        interp_offsets = np.interp(x_values, ddf.iloc[:, 0], ddf.iloc[:, 1])
-                        interp_area = np.interp(x_values, ddf.iloc[:, 0], ddf.iloc[:, 8])
-                        indicies = [int(x_values[i]-1) for i in range(len(x_values))]
-
-                        df.iloc[indicies, 1] = interp_offsets  # Note be very careful where to insert as depending on
-                        # the interp range we do not evaluate the whole data.
-                        df.iloc[indicies, 8] = interp_area  # Note be very careful where to insert as depending on the
-                        # interp range we do not evaluate the whole data.
-                        self.initialize_offset_table(df)
-                        # Do interpolation of the values.
-                        # The interpolated values have then to be matched and re interpolated to the length of the
-                        # measurement data.
-                        # Image frequency has to be know or at least how many measurements one had between the first
-                        # image and next
-                        # one.
-                        self.export_results_btn.setEnabled(True)
-                        self.save_btn.setEnabled(True)
-                        self.statusBar.showMessage('Done!')
-                    else:
-                        self.statusBar.showMessage('Error: Check if all items are drawn correctly.')
+                self.tip_offset_thread.start_time_spin_box = self.start_time_spin_box.value()
+                self.tip_offset_thread.end_time_spin_box = self.end_time_spin_box.value()
+                self.tip_offset_thread.line_list = line_list
+                self.tip_offset_thread.polygon_list = polygon_list
+                self.tip_offset_thread.data = self.data
+                self.tip_offset_thread.tip_offset_list = self.tip_offset_list
+                self.statusBar.showMessage(f'Start calculations ...')
+                self.progressBar.setValue(0)
 
         except Exception as e:
             print('Exception:', e)
             self.statusBar.showMessage('Error:', e)
+
+    def done_calculate_tip_offset(self):
+        self.calculationThread.quit()
+
+    @pyqtSlot(list)
+    def get_tip_offset_results(self, params):
+        # params =  df, data, correction_objects, tip_offset_list, progress, finished, msg
+        if params:
+            self.progressBar.setValue(params[4])
+            if params[5] == 1:
+                # Save data
+                self.initialize_offset_table(params[0])
+                self.data = params[1]
+                self.correction_objects = params[2]
+                self.tip_offset_list = params[3]
+
+                self.export_results_btn.setEnabled(True)
+                self.save_btn.setEnabled(True)
+                self.statusBar.showMessage(f'{params[6]}')
+            elif params[5] == -1:
+                self.statusBar.showMessage(f'{params[6]}')
+
+    # @todo remove if testing is successful
+    # def calculate_tip_offset(self):
+    #     try:
+    #         res = self.show_popup()
+    #
+    #         if res == 0:
+    #             self.statusBar.showMessage('Start calculations')
+    #             line_list = self.bookKeeper.getAllCompositeLine()
+    #             polygon_list = self.bookKeeper.getAllCompositePolygon()
+    #             # Reset list
+    #             self.correction_objects = []
+    #             for i in range(len(line_list)):
+    #                 composite_object = {}
+    #
+    #                 # If we have a pair of a reference line and a cell outline on a particular image we compute its
+    #                 # offset
+    #                 if line_list[i] and polygon_list[i]:
+    #
+    #                     polygon_list[i].getCenterOfMass()
+    #                     comP = polygon_list[i]._polygon_item._centerOfMass
+    #
+    #                     p1 = line_list[i]._vertexA.pos()
+    #                     p2 = line_list[i]._vertexB.pos()
+    #
+    #                     polygon_list[i]._polygon_item.updateArea()
+    #                     area = polygon_list[i]._polygon_item._area
+    #
+    #                     self.tip_offset_list[i] = self.calculate_norm_cell_to_reference(p2, p1, comP)
+    #                     self.data[i] = [i + 1, self.tip_offset_list[i], comP.x(), comP.y(), p2.x(), p2.y(), p1.x(),
+    #                                     p1.y(), area]
+    #                     # Collect the drawn objects per image frame into a list as dict.
+    #                     composite_object.update({'image_frame': i + 1, 'tip_offset': self.tip_offset_list[i],
+    #                                              'object_area': area, 'object_center_of_mass': {'x': comP.x(),
+    #                                                                                             'y': comP.y()},
+    #                                              'tip_reference_line': {'x': [p2.x(), p1.x()], 'y': [p2.y(), p1.y()]},
+    #                                              'object': polygon_list[i]._polygon_item.vertices_to_dict()})
+    #                     self.correction_objects.append(composite_object)
+    #                     self.progressBar.setValue(round(((i + 1) / len(line_list)) * 100))
+    #
+    #             # Interpolate missing values for image frames in between if not for all image frame a reference and cell
+    #             # outline was drawn. Note at least on the first and last frame the reference and cell outline has to be
+    #             #  present.
+    #             if self.tip_offset_list:
+    #                 df = pd.DataFrame(self.data, columns=['Image frame', 'Tip offset', 'Centroid x', 'Centroid y',
+    #                                                       'Ref point1 x', 'Ref point1 y', 'Ref point2 x',
+    #                                                       'Ref point2 y', 'Area'])
+    #
+    #                 x_values = np.linspace(self.start_time_spin_box.value(), self.end_time_spin_box.value(), (
+    #                         self.end_time_spin_box.value()-self.start_time_spin_box.value())+1)
+    #                 ddf = df.dropna()
+    #                 if len(ddf) >= 1:
+    #                     interp_offsets = np.interp(x_values, ddf.iloc[:, 0], ddf.iloc[:, 1])
+    #                     interp_area = np.interp(x_values, ddf.iloc[:, 0], ddf.iloc[:, 8])
+    #                     indicies = [int(x_values[i]-1) for i in range(len(x_values))]
+    #
+    #                     df.iloc[indicies, 1] = interp_offsets  # Note be very careful where to insert as depending on
+    #                     # the interp range we do not evaluate the whole data.
+    #                     df.iloc[indicies, 8] = interp_area  # Note be very careful where to insert as depending on the
+    #                     # interp range we do not evaluate the whole data.
+    #                     self.initialize_offset_table(df)
+    #                     # Do interpolation of the values.
+    #                     # The interpolated values have then to be matched and re interpolated to the length of the
+    #                     # measurement data.
+    #                     # Image frequency has to be know or at least how many measurements one had between the first
+    #                     # image and next
+    #                     # one.
+    #                     self.export_results_btn.setEnabled(True)
+    #                     self.save_btn.setEnabled(True)
+    #                     self.statusBar.showMessage('Done!')
+    #                 else:
+    #                     self.statusBar.showMessage('Error: Check if all items are drawn correctly.')
+    #
+    #     except Exception as e:
+    #         print('Exception:', e)
+    #         self.statusBar.showMessage('Error:', e)
 
     def export_results(self):
         try:
@@ -670,6 +724,108 @@ class TableModel(QAbstractTableModel):
             self.layoutAboutToBeChanged.emit()
             self._data = self._data.sort_values(self._data.columns[Ncol], ascending=not order)
             self.layoutChanged.emit()
+        except Exception as e:
+            print(e)
+
+
+class TipOffsetThread(QObject):
+    """
+    Class to calculate the tip offsets and area separate thread and send progress and results back to
+    position correction ui.
+    """
+
+    params = pyqtSignal(list)
+    stopped = pyqtSignal()
+
+    start_time_spin_box = 0
+    end_time_spin_box = 0
+    line_list = []
+    polygon_list = []
+    correction_objects = []
+    tip_offset_list = []
+    data = []
+    # df, data, correction_objects, tip_offset_list, progress, finished, msg
+    results = [0, 0, 0, 0, 0, 0, 0]
+
+    def start(self):
+        line_list = self.line_list
+        polygon_list = self.polygon_list
+        # Reset list
+        self.correction_objects = []
+        for i in range(len(line_list)):
+            composite_object = {}
+
+            # If we have a pair of a reference line and a cell outline on a particular image we compute its
+            # offset
+            if line_list[i] and polygon_list[i]:
+                polygon_list[i].getCenterOfMass()
+                comP = polygon_list[i]._polygon_item._centerOfMass
+
+                p1 = line_list[i]._vertexA.pos()
+                p2 = line_list[i]._vertexB.pos()
+
+                polygon_list[i]._polygon_item.updateArea()
+                area = polygon_list[i]._polygon_item._area
+
+                self.tip_offset_list[i] = self.calculate_norm_cell_to_reference(p2, p1, comP)
+                self.data[i] = [i + 1, self.tip_offset_list[i], comP.x(), comP.y(), p2.x(), p2.y(), p1.x(),
+                                p1.y(), area]
+                # Collect the drawn objects per image frame into a list as dict.
+                composite_object.update({'image_frame': i + 1, 'tip_offset': self.tip_offset_list[i],
+                                         'object_area': area, 'object_center_of_mass': {'x': comP.x(),
+                                                                                        'y': comP.y()},
+                                         'tip_reference_line': {'x': [p2.x(), p1.x()], 'y': [p2.y(), p1.y()]},
+                                         'object': polygon_list[i]._polygon_item.vertices_to_dict()})
+                self.correction_objects.append(composite_object)
+                self.results[4] = round(((i + 1) / len(line_list)) * 100)
+                self.results[5] = 0
+                self.params.emit(self.results)
+
+        # Interpolate missing values for image frames in between if not for all image frame a reference and cell
+        # outline was drawn. Note at least on the first and last frame the reference and cell outline has to be
+        #  present.
+        if self.tip_offset_list:
+            df = pd.DataFrame(self.data, columns=['Image frame', 'Tip offset', 'Centroid x', 'Centroid y',
+                                                  'Ref point1 x', 'Ref point1 y', 'Ref point2 x',
+                                                  'Ref point2 y', 'Area'])
+
+            x_values = np.linspace(self.start_time_spin_box, self.end_time_spin_box,
+                                   (self.end_time_spin_box - self.start_time_spin_box) + 1)
+            ddf = df.dropna()
+            if len(ddf) >= 1:
+                interp_offsets = np.interp(x_values, ddf.iloc[:, 0], ddf.iloc[:, 1])
+                interp_area = np.interp(x_values, ddf.iloc[:, 0], ddf.iloc[:, 8])
+                indicies = [int(x_values[i] - 1) for i in range(len(x_values))]
+
+                df.iloc[indicies, 1] = interp_offsets  # Note be very careful where to insert as depending on
+                # the interp range we do not evaluate the whole data.
+                df.iloc[indicies, 8] = interp_area  # Note be very careful where to insert as depending on the
+                # interp range we do not evaluate the whole data.
+
+                # df, data, correction_objects, tip_offset_list, progress, finished, msg
+                self.results[0] = df
+                self.results[1] = self.data
+                self.results[2] = self.correction_objects
+                self.results[3] = self.tip_offset_list
+                self.results[4] = 100
+                self.results[5] = 1
+                self.results[6] = 'Done !'
+                self.params.emit(self.results)
+            else:
+                self.results[5] = -1
+                self.results[6] = 'Error: Check if all items are drawn correctly.'
+                self.params.emit(self.results)
+
+        self.stopped.emit()
+
+    @staticmethod
+    def calculate_norm_cell_to_reference(p1, p2, centroid):
+        try:
+            denominator = abs((p2.y() - p1.y()) * centroid.x() - (p2.x() - p1.x()) * centroid.y() + p2.x() * p1.y() -
+                              p2.y() * p1.x())
+            numerator = math.sqrt((p2.y() - p1.y()) ** 2 + (p2.x() - p1.x()) ** 2)
+            distance = denominator/numerator
+            return distance
         except Exception as e:
             print(e)
 
