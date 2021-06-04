@@ -475,7 +475,7 @@ class PositionCorrectionUI(QMainWindow):
                     self.calculationThread.start()
                 self.calculationThread.started.connect(self.tip_offset_thread.start)
                 self.statusBar.showMessage(f'Start calculations ...')
-                self.progressBar.setValue(0)
+                self.progressBar.setValue(1)
 
         except Exception as e:
             print('Exception:', e)
