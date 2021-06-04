@@ -457,11 +457,8 @@ class PositionCorrectionUI(QMainWindow):
         self.tip_offset_thread.moveToThread(self.calculationThread)
 
         # Connecting the signals
-        if not self.calculationThread.isRunning():
-            self.calculationThread.start()
         self.tip_offset_thread.params.connect(self.get_tip_offset_results)
         self.tip_offset_thread.stopped.connect(self.done_calculate_tip_offset)
-        self.calculationThread.started.connect(self.tip_offset_thread.start)
 
         try:
             res = self.show_popup()
@@ -474,6 +471,9 @@ class PositionCorrectionUI(QMainWindow):
                 self.tip_offset_thread.polygon_list = polygon_list
                 self.tip_offset_thread.data = self.data
                 self.tip_offset_thread.tip_offset_list = self.tip_offset_list
+                if not self.calculationThread.isRunning():
+                    self.calculationThread.start()
+                self.calculationThread.started.connect(self.tip_offset_thread.start)
                 self.statusBar.showMessage(f'Start calculations ...')
                 self.progressBar.setValue(0)
 
