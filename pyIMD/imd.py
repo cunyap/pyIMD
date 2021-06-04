@@ -285,11 +285,11 @@ class InertialMassDetermination(QObject):
                     min_data_idx = self.settings.image_start_index
                     # Max index into data_measured corresponds to the last image frame times number_of_data_per_frame
                     max_data_idx = int((self.settings.position_correction_end_frame - 1) * \
-                                self.settings.number_of_data_per_frame)
+                                        self.settings.number_of_data_per_frame)
                     # Clip max_data_idx if higher than actual measured data. i. e if image_start_index is not 0
 
                     if self.settings.calculation_mode == 'Cont.Sweep':
-                        if max_data_idx > len(self.data_measured) / self._n_rows:
+                        if max_data_idx > (len(self.data_measured) / self._n_rows):
                             max_data_idx = int(len(self.data_measured) / self._n_rows)
                     else:
                         if max_data_idx > len(self.data_measured):
@@ -373,7 +373,7 @@ class InertialMassDetermination(QObject):
                         if len(self.settings.cell_offsets) == 0:
                             self.calculated_cell_mass.append(mass * self.position_correction_factor)
                         else:
-                            self.calculated_cell_mass.append(mass * self.position_correction_factor[iSweep])
+                            self.calculated_cell_mass.append(mass * self.position_correction_factor[int(iSweep/self._n_rows)])
 
                         if np.remainder(iSweep, 300) == 0:
                             figure_i_sweep = plot_fitting(self.data_measured.iloc[iSweep + self._freq_idx, 0:255].astype(float),
