@@ -476,6 +476,7 @@ class PositionCorrectionUI(QMainWindow):
                 self.calculationThread.started.connect(self.tip_offset_thread.start)
                 self.statusBar.showMessage(f'Start calculations ...')
                 self.progressBar.setValue(1)
+                self.calcOffsetBtn.setEnabled(False)
 
         except Exception as e:
             print('Exception:', e)
@@ -483,6 +484,7 @@ class PositionCorrectionUI(QMainWindow):
 
     def done_calculate_tip_offset(self):
         self.calculationThread.quit()
+        self.calcOffsetBtn.setEnabled(True)
 
     @pyqtSlot(list)
     def get_tip_offset_results(self, params):
