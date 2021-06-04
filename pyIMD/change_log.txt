@@ -1,3 +1,6 @@
+- 0.1.2
+            - New feature: Show progress during position correction calculations and use threading.
+            - Fixed Bug:     Use of position correction factor during Cont. sweep mode.
 - 0.1.1
             - New feature: Support old Cytomass LabView scripts with center frequency and offset for backwards compatibility.
 - 0.1.0
