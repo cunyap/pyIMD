@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import QGraphicsEllipseItem
 class Circle(QGraphicsEllipseItem):
     """A vertex."""
 
-    def __init__(self, x, y, radius=5.0, name="", composite=None):
+    def __init__(self, x, y, radius=2, name="", composite=None):
         """Constructor."""
 
         self._diameter = 2 * radius

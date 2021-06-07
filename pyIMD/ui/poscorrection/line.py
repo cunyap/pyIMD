@@ -33,7 +33,7 @@ class Line(QGraphicsLineItem):
         # Now place it at the correct position in the scene
         self.setPos(x0, y0)
 
-        self.setPen(QPen(QColor(148, 85, 141), 2))
+        self.setPen(QPen(QColor(148, 85, 141), 0.5))
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.setAcceptHoverEvents(True)

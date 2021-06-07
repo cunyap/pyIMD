@@ -24,7 +24,7 @@ class Polygon(QGraphicsPolygonItem):
         self._composite = composite
         self.polygon_vertices = []
         self.setZValue(10)
-        self.setPen(QPen(QColor("green"), 2))
+        self.setPen(QPen(QColor(0, 255, 0, 90), 0.5))
         self.setAcceptHoverEvents(True)
 
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
@@ -45,7 +45,7 @@ class Polygon(QGraphicsPolygonItem):
     def add_vertex(self, p):
         self.polygon_vertices.append(p)
         self.setPolygon(QPolygonF(self.polygon_vertices))
-        item = PolygonVertex(p.x(), p.y(), 7, len(self.polygon_vertices) - 1, self, self._composite)
+        item = PolygonVertex(p.x(), p.y(), 2, len(self.polygon_vertices) - 1, self, self._composite)
         self.scene().addItem(item)
         self.polygon_vertex_items.append(item)
         item.setPos(p)

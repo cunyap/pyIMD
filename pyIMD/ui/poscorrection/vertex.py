@@ -33,7 +33,7 @@ class Vertex(QGraphicsEllipseItem):
         self.setPos(x - radius, y - radius)
 
         # self.setBrush(QColor(148, 85, 141))
-        self.setPen(QPen(QColor(148, 85, 141), 2))
+        self.setPen(QPen(QColor(148, 85, 141), 0.5))
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.setAcceptHoverEvents(True)
