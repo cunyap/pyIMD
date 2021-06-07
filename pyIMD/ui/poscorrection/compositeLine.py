@@ -42,7 +42,7 @@ class CompositeLine:
         self._scene = scene
 
         # Defaults
-        self._diameter = 6.0
+        self._diameter = 2
         self._line_length = 50
 
         # Relevant coordinates
@@ -55,10 +55,10 @@ class CompositeLine:
         self._line = Line(self._x0, self._y0, self._x, self._y, "Line", self)
 
         # Add Vertex A
-        self._vertexA = Vertex(self._x0, self._y0, 2, "A", self)
+        self._vertexA = Vertex(self._x0, self._y0, 2.5, "A", self)
 
         # Add Vertex B
-        self._vertexB = Vertex(self._x, self._y, 2, "B", self)
+        self._vertexB = Vertex(self._x, self._y, 2.5, "B", self)
 
         # Do we have a scene already?
         if self._scene is not None:
