@@ -310,6 +310,13 @@ class IMDWindow(QtWidgets.QMainWindow):
 
             self.sync_settings()
 
+            self.concatenation.setEnabled(False)
+            self.actionConcatenate_Files.setEnabled(False)
+            self.concatenation.close()
+            self.actionPosition_correction.setEnabled(False)
+            self.position_correction.setEnabled(False)
+            self.position_correction.close()
+
             task = self.executor.submit(self.imd.run_inertial_mass_determination)
             task.add_done_callback(self.on_task_finished)
 
@@ -318,6 +325,13 @@ class IMDWindow(QtWidgets.QMainWindow):
             self.print_to_console('')  # Needed to output logging information to newline in console
 
             self.sync_settings()
+
+            self.concatenation.setEnabled(False)
+            self.actionConcatenate_Files.setEnabled(False)
+            self.concatenation.close()
+            self.position_correction.setEnabled(False)
+            self.actionPosition_correction.setEnabled(False)
+            self.position_correction.close()
 
             task = self.executor.submit(self.imd.run_inertial_mass_determination)
             task.add_done_callback(self.on_task_finished)
@@ -330,6 +344,10 @@ class IMDWindow(QtWidgets.QMainWindow):
         task:  ThreadPoolExecutor task
         """
         self.tabWidget.setTabEnabled(2, True)
+        self.concatenation.setEnabled(True)
+        self.actionConcatenate_Files.setEnabled(True)
+        self.position_correction.setEnabled(True)
+        self.actionPosition_correction.setEnabled(True)
         self.settings_dialog.frequency_offset_edit.setText(str(self.imd.settings.frequency_offset))
         self.task_done = True
 

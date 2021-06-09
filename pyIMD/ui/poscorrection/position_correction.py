@@ -60,6 +60,8 @@ class PositionCorrectionUI(QMainWindow):
 
         uic.loadUi(resource_path(str(Path('ui', 'positioncorrectionui.ui'))), self)
         self.setWindowTitle('pyIMD :: Position Correction')
+        self.setWindowIcon(QIcon(resource_path(os.path.join(os.path.join("ui", "icons",
+                                                                               "pyIMD_logo_icon.ico")))))
         self.draw_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-02.png')))),
                                                   'Draw new cantilever tip reference line', self)
         self.delete_reference_line_action = QAction(QIcon(resource_path(str(Path('ui', 'icons', 'Icons-06.png')))),
@@ -484,6 +486,7 @@ class PositionCorrectionUI(QMainWindow):
 
     def done_calculate_tip_offset(self):
         self.calculationThread.quit()
+        self.calculationThread.wait()
         self.calcOffsetBtn.setEnabled(True)
 
     @pyqtSlot(list)
