@@ -371,10 +371,7 @@ class IMDWindow(QtWidgets.QMainWindow):
                 # 2. Submit job as project file to run_batch_inertial_mass_determination
                 # 3. IMD will open the project and if settings are valid run it
                 imd_task = InertialMassDetermination()
-                task = self.executor.submit(imd_task.run_batch_inertial_mass_determination,
-                                            self.current_batch_project_file)
-                # 4. Get signal that it is done
-                task.add_done_callback(self.on_task_finished)
+                self.executor.submit(imd_task.run_batch_inertial_mass_determination, self.current_batch_project_file)
                 # Start next project
             self.print_to_console("Batch processing: all files submitted")
 
