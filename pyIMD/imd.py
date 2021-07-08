@@ -477,7 +477,8 @@ class InertialMassDetermination(QObject):
                 # load each project configuration sequentially.
                 if self._has_valid_configuration == 1:
                     # start calculations if configuration was valid
-                    self.run_intertial_mass_determination()
+                    self.logger.info(f"Batch processing: start analysis {file}")
+                    self.run_inertial_mass_determination()
                 else:
                     self.logger.info('No valid pyIMD configuration found. Please create or load a pyIMD project first.')
         except Exception as e:

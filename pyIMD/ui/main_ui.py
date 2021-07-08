@@ -18,6 +18,7 @@ import webbrowser
 import pyqtgraph as pg
 import pandas as pd
 import numpy as np
+import multiprocessing
 from ast import literal_eval
 from pathlib import Path
 from PyQt5 import uic, QtWidgets, QtCore, QtGui
@@ -99,7 +100,8 @@ class IMDWindow(QtWidgets.QMainWindow):
         self.radio_btn_name_array = ['autoRadio', 'pllRadio', 'contSweepRadio']
         self.opening_mode = 0 # intended to be used to distinguish if the ui is started as stand alone or not.
         self.task_done = False
-        self.executor = ThreadPoolExecutor(max_workers=4)
+        self.max_workers = multiprocessing.cpu_count()
+        self.executor = ThreadPoolExecutor(max_workers=multiprocessing.cpu_count())
 
         # Settings
         self.__settings = {"figure_format": FIGURE_FORMAT,
@@ -361,15 +363,20 @@ class IMDWindow(QtWidgets.QMainWindow):
 
         if len(selected_project_files) != 0:
             self.print_to_console("Batch calculation mode starting...")
+            self.print_to_console(f"Batch max {self.max_workers} workers available")
             for iProject in range(0, len(selected_project_files)):
                 self.current_batch_project_file = selected_project_files[iProject]  # here iterate over project files
-                self.print_to_console(self.current_batch_project_file)
-                # 1. Open Project from list
-                self.open_project()
-                # 2. Run calculation
-                self.run_calculation()
-                # 3. Get signal that it is done
+                self.print_to_console(f"Batch processing file {self.current_batch_project_file}")
+                # 1. Create new tep IMD instance
+                # 2. Submit job as project file to run_batch_inertial_mass_determination
+                # 3. IMD will open the project and if settings are valid run it
+                imd_task = InertialMassDetermination()
+                task = self.executor.submit(imd_task.run_batch_inertial_mass_determination,
+                                            self.current_batch_project_file)
+                # 4. Get signal that it is done
+                task.add_done_callback(self.on_task_finished)
                 # Start next project
+            self.print_to_console("Batch processing: all files submitted")
 
     def on_combo_box_changed(self, index):
         """
