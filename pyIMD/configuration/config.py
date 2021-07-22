@@ -883,7 +883,9 @@ class Settings(object):
                         setattr(self, key, yaml.safe_load(json.loads(json.dumps(value))))
 
                 except Exception as e:
-                    print('Project settings error:', e)
+                    if key not in ['PositionCorrection', 'cell_offsets', 'cell_center_of_mass_x', 'cell_center_of_mass_y',
+                               'ref_line_1_x', 'ref_line_1_y', 'ref_line_2_x', 'ref_line_2_y', 'area']:
+                        print(f'Project settings error: {key} {value}', e)
             return "Project {} successfully opened".format(pathlib.Path(file_path).name)
         except Exception as e:
             return "Error during opening project: " + str(e)
