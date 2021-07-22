@@ -738,6 +738,7 @@ class TipOffsetThread(QObject):
     Class to calculate the tip offsets and area separate thread and send progress and results back to
     position correction ui.
     """
+    curr_thread = QThread.currentThread()
 
     params = pyqtSignal(list)
     stopped = pyqtSignal()

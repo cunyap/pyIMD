@@ -23,7 +23,7 @@ from ast import literal_eval
 from pathlib import Path
 from PyQt5 import uic, QtWidgets, QtCore, QtGui
 from PyQt5.Qt import QFileDialog, QMessageBox, QApplication, QStyle, QTextCursor, QPushButton, QListWidget, QSize,\
-    QGraphicsSvgItem, Qt
+    QGraphicsSvgItem, Qt, QThread
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QSettings
 from pyIMD.analysis.curve_fit import fit_function
 from pyIMD.ui.settings import SettingsDialog
@@ -220,6 +220,8 @@ class IMDWindow(QtWidgets.QMainWindow):
         self.logger.setLevel(logging.INFO)
 
         self.imd = InertialMassDetermination()
+
+        curr_thread = QThread.currentThread()
 
         try:
             if self.settings.value('display_on_startup') is None:
