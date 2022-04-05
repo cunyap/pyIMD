@@ -386,7 +386,7 @@ class InertialMassDetermination(QObject):
                     calculated_cell_mass['Mean mass (ng)'] = calculated_cell_mass['Mass (ng)'].rolling(
                         window=self.settings.rolling_window_size).mean()
 
-                    if len(self.settings.cell_offsets) > 0:
+                    if len(self.settings.cell_offsets) != 0:
                         calculated_cell_mass['Object area (um_sq)'] = area
 
                     self.calculated_cell_mass = calculated_cell_mass
@@ -436,9 +436,10 @@ class InertialMassDetermination(QObject):
                                                    DataFrame(self.calculated_cell_mass, columns=['Mass (ng)'])], axis=1)
                     calculated_cell_mass['Mean mass (ng)'] = calculated_cell_mass['Mass (ng)'].rolling(
                         window=self.settings.rolling_window_size).mean()
-                    if len(self.settings.cell_offsets) > 0:
+                    if len(self.settings.cell_offsets) != 0:
                         calculated_cell_mass['Object area (um_sq)'] = area
-                        self.calculated_cell_mass = calculated_cell_mass
+
+                    self.calculated_cell_mass = calculated_cell_mass
 
                     figure_cell_mass = plot_mass(calculated_cell_mass, self.settings.figure_plot_every_nth_point)
                     self.logger.info('Start writing figure to disk')
