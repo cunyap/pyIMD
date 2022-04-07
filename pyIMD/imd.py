@@ -18,9 +18,10 @@ from pyIMD.io.write_to_disk import write_to_disk_as, write_concat_data
 from pyIMD.analysis.calculations import calculate_mass
 from pyIMD.analysis.calculations import calculate_resonance_frequencies, calculate_position_correction
 from pyIMD.configuration.defaults import *
+from pyIMD.utils.utils import set_backend
 from PyQt5.QtCore import pyqtSlot, QObject
 import matplotlib
-matplotlib.use('Qt5Agg')
+matplotlib.use(set_backend())
 from pyIMD.plotting.figures import plot_fitting, plot_response_shift, plot_mass
 import os
 import sys
