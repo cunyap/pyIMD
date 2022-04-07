@@ -9,7 +9,7 @@
 # *     Andreas P. Cuny - initial API and implementation
 # *******************************************************************************/
 
-import traceback
+from IPython import get_ipython
 
 
 def is_in_notebook():
@@ -20,8 +20,11 @@ def is_in_notebook():
     Returns:
         ret (`bool`):      Returns true if code is run from ipython/jupyter, false otherwise.
     """
-    rstk = traceback.extract_stack(limit=1)[0]
-    return rstk[0].startswith("<ipython")
+    ipy = get_ipython()
+    if ipy is None:
+        return False
+    elif "IPKernelApp" in ipy.config:
+        return True
 
 
 def set_backend():
