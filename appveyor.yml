@@ -33,6 +33,7 @@ install:
 # install usual requirements
   - pip install "setuptools>=30.0.0"  # minimal version of setuptools required to build package without error
   - pip install .
+  - pip install cffi
   - pip install PyInstaller
   - pip install appdirs tornado packaging
 
