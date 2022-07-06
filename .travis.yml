@@ -7,16 +7,19 @@ matrix:
     env:
       - PYTHON_VERSION=3.5
       - DEPLOY_FILE="/home/travis/build/cunyap/pyIMD/dist/pyIMD_x64_unix"
+      - OS_TYPE=linux
   - name: "Python 3.6 on Linux"
     python: 3.6
     env:
       - PYTHON_VERSION=3.6
+      - OS_TYPE=linux
   - name: "Python 3.7 on Xenial Linux"
     python: 3.7
     dist: xenial          # required for Python >= 3.7
     sudo: true
     env:
       - PYTHON_VERSION=3.7
+      - OS_TYPE=linux
   - name: "Python 3.5 on macOS"
     os: osx
     osx_image: xcode8
@@ -24,26 +27,29 @@ matrix:
     env:
       - PYTHON_VERSION=3.5
       - DEPLOY_FILE="/Users/travis/build/cunyap/pyIMD/dist/pyIMD_x64_osx.dmg"
+      - OS_TYPE=osx
   - name: "Python 3.6 on macOS"
     os: osx
     language: generic
     env:
       - PYTHON_VERSION=3.6
+      - OS_TYPE=osx
   - name: "Python 3.7 on macOS"
     os: osx
     language: generic
     env:
       - PYTHON_VERSION=3.7
+      - OS_TYPE=osx
 before_install:
-- source ./pyIMD/ci/setup_python.sh $PYTHON_VERSION 'osx'
+- source ./pyIMD/ci/setup_python.sh $PYTHON_VERSION $OS_TYPE
 install:
 - bash $TRAVIS_BUILD_DIR/pyIMD/ci/build.sh $TRAVIS_OS_NAME $PYTHON_VERSION
 before_script: cd ${TRAVIS_BUILD_DIR}/pyIMD/examples
-script:
-- "if [\"$TRAVIS_OS_NAME\" = \"windows\"]; then\n  python3 -m unittest discover -s
-  $TRAVIS_BUILD_DIR/pyIMD/tests -t $TRAVIS_BUILD_DIR/pyIMD/tests\nelse \n  python
-  -m unittest discover -s $TRAVIS_BUILD_DIR/pyIMD/tests -t $TRAVIS_BUILD_DIR/pyIMD/tests\nfi
-  \n"
+# script:
+# - "if [\"$TRAVIS_OS_NAME\" = \"windows\"]; then\n  python3 -m unittest discover -s
+#   $TRAVIS_BUILD_DIR/pyIMD/tests -t $TRAVIS_BUILD_DIR/pyIMD/tests\nelse \n  python
+#   -m unittest discover -s $TRAVIS_BUILD_DIR/pyIMD/tests -t $TRAVIS_BUILD_DIR/pyIMD/tests\nfi
+#   \n"
 deploy:
   provider: releases
   api_key:
