@@ -145,7 +145,7 @@ class About(QWidget):
                                 \nCSB Laboratory @ ETH Zurich\nMattenstrasse 26 \n4058 Basel Switzerland")
         self.dependencies = QTextBrowser()
         self.dependencies.setHtml("The authors appreciate and use the following 3rd parties libraries: <br> \
-                                <br>Python v3.5, under the <a href=https://docs.python.org/3/license.html>PSF License</a> \
+                                <br>Python >=v3.5, under the <a href=https://docs.python.org/3/license.html>PSF License</a> \
                                 <br>lxml, under the <a href=https://github.com/lxml/lxml/blob/master/LICENSES.txt>BSD 3-Clause License</a> \
                                 <br>numpy v1.14.5, under the <a href=https://docs.scipy.org/doc/numpy-1.10.0/license.html>BSD 3-Clause License</a> \
                                 <br>scipy v1.1.0, under the <a href=https://docs.scipy.org/doc/numpy-1.10.0/license.html>BSD 3-Clause License</a> \

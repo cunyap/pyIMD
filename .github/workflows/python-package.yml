@@ -26,7 +26,7 @@ jobs:
            tag_name: ${{ steps.tag.outputs.release_tag }}
            draft: false
            prerelease: false
-#           body_path: RELEASE_NOTES.md
+           body_path: RELEASE_NOTES.md
       - name: Release URL on file
         run: echo "${{ steps.tag.outputs.release_tag }}" > release_url.txt
       - name: Save Release URL File For Uploading Files
@@ -68,7 +68,7 @@ jobs:
       - name: Run Linux Build
         if: matrix.os == 'ubuntu-latest'
         run: |
-           python -m PyInstaller --noconsole --onefile pyIMD/ci/pyIMD_unix.spec
+           python -m PyInstaller pyIMD/ci/pyIMD_unix.spec
            echo "$PWD"
       - name: Run Windows Build
         if: matrix.os == 'windows-latest'
@@ -78,7 +78,7 @@ jobs:
       - name: Run Darwin Mac Build
         if: matrix.os == 'macos-latest'
         run: |
-          python -m PyInstaller --noconsole --onefile pyIMD/ci/pyIMD_osx.spec
+          python -m PyInstaller pyIMD/ci/pyIMD_osx.spec
           echo "$PWD"
       - name: Zip binaries
         run: |
