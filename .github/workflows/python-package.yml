@@ -73,7 +73,7 @@ jobs:
       - name: Run Windows Build
         if: matrix.os == 'windows-latest'
         run: |
-            python -m PyInstaller --noconsole --onefile pyIMD/ci/pyIMD_win.spec
+            python -m PyInstaller pyIMD/ci/pyIMD_win.spec
             echo "$PWD"
       - name: Run Darwin Mac Build
         if: matrix.os == 'macos-latest'
