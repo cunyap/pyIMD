@@ -1,0 +1,116 @@
+# This workflow will install Python dependencies, run tests and build pyIMD for different platforms and issue a relase with
+# the binaries as artifacts.
+
+name: Create release
+
+on: [push]
+
+jobs:
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Generate release tag
+        id: tag
+        run: |
+          echo "::set-output name=release_tag::UserBuild_$(date +"%Y.%m.%d_%H-%M")"
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+           name: Latest Development Builds # ${{ github.ref_name }}
+           tag_name: ${{ steps.tag.outputs.release_tag }}
+           draft: false
+           prerelease: false
+           body_path: RELEASE_NOTES.md
+      - name: Release URL on file
+        run: echo "${{ steps.tag.outputs.release_tag }}" > release_url.txt
+      - name: Save Release URL File For Uploading Files
+        uses: actions/upload-artifact@v1
+        with:
+          name: release_url
+          path: release_url.txt
+  build_release:
+    name: Build Release
+    needs: create_release
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest] # windows-latest, ubuntu-latest, macos-latest
+        include:
+          - os: ubuntu-latest
+            release_suffix: linux
+          - os: macos-latest
+            release_suffix: apple-darwin
+          - os: windows-latest
+            release_suffix: windows
+        python-version: ["3.7"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          python -m pip install $USER PyInstaller
+#      - name: Test with pytest
+#        run: |
+#          python -m unittest discover -s pyIMD//tests -t pyIMD/tests
+      - name: Run Linux Build
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+           python -m PyInstaller pyIMD/ci/pyIMD_unix.spec
+           echo "$PWD"
+      - name: Run Windows Build
+        if: matrix.os == 'windows-latest'
+        run: |
+            python -m PyInstaller pyIMD/ci/pyIMD_win.spec
+            echo "$PWD"
+      - name: Run Darwin Mac Build
+        if: matrix.os == 'macos-latest'
+        run: |
+          python -m PyInstaller pyIMD/ci/pyIMD_osx.spec
+          echo "$PWD"
+      - name: Zip binaries
+        run: |
+          if [[ "${{ matrix.os }}" == windows-latest ]]; then
+              7z a dist/pyIMD-x86-64-${{ matrix.release_suffix }}.zip dist
+          else
+              zip -r dist/pyIMD-x86-64-${{ matrix.release_suffix }}.zip dist
+          fi
+        shell: bash
+      - name: Upload artifacs
+        uses: actions/upload-artifact@v3
+        with:
+            name: pyIMD-x86-64-${{ matrix.release_suffix }}
+            path: dist/*.zip
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        run: |
+           value=$(cat release_url/release_url.txt)
+           echo ::set-output name=upload_url::$value
+        shell: bash
+#      - name: Show env v
+#        run: |
+#            echo "${{ steps.get_release_info.outputs.upload_url }}"
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_release_info.outputs.upload_url }}
+          files: |
+            dist/pyIMD-x86-64-${{ matrix.release_suffix }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
