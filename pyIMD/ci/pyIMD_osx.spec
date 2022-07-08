@@ -16,8 +16,8 @@ from PyInstaller.utils.hooks import collect_dynamic_libs
 block_cipher = None
 
 a = Analysis([str(Path(working_dir / 'main.py' ))],
-            pathex=[],
-            binaries=[],
+             pathex=[],
+             binaries=[],
              datas=[],
              hiddenimports=["PyQt5", "numpy", "PyQt5.QtWidgets", "PyQt5.sip", "platinfo", "tkinter", "tkinter.filedialog", "pandas._libs.tslibs.np_datetime","pandas._libs.tslibs.nattype","pandas._libs.skiplist",
 							"scipy.optimize", "scipy.optimize.minipack", "pyIMD", "plotnine", "mizani", "palettable.colorbrewer", "statsmodels", "statsmodels.tools", "statsmodels.tsa.statespace._filters",

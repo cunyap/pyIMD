@@ -7,17 +7,18 @@
 import os
 import sys
 from pathlib import Path
-sys.setrecursionlimit(3000)
+# sys.setrecursionlimit(3000)
+
 block_cipher = None
 
 working_dir = Path(os.path.abspath(SPECPATH)).parent
 from PyInstaller.utils.hooks import collect_dynamic_libs
 
-additionalLibs = []
-additionalLibs.append( ("libGL.so.1", "/usr/lib64/libGL.so.1", 'BINARY') )
+# additionalLibs = []
+# additionalLibs.append( ("libGL.so.1", "/usr/lib64/libGL.so.1", 'BINARY') )
 
 a = Analysis([str(Path(working_dir / 'main.py' ))],
-#            pathex=[],
+             pathex=[],
              binaries=[],
              datas=[],
              hiddenimports=["tkinter", "tkinter.filedialog", "pandas._libs.tslibs.np_datetime","pandas._libs.tslibs.nattype","pandas._libs.skiplist",
