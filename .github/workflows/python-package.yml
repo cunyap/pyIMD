@@ -48,7 +48,7 @@ jobs:
 #            release_suffix: apple-darwin
           - os: windows-latest
             release_suffix: windows
-        python-version: ["3.5"]
+        python-version: ["3.7"]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
