@@ -5,9 +5,9 @@
 # PyInstaller --noconsole --onefile /Users/travis/build/cunyap/pyIMD/pyIMD/build/pyIMD_osx.spec
 
 # work-around for https://github.com/pyinstaller/pyinstaller/issues/4064
-import distutils
-if distutils.distutils_path.endswith('__init__.py'):
-    distutils.distutils_path = os.path.dirname(distutils.distutils_path)
+# import distutils
+# if distutils.distutils_path.endswith('__init__.py'):
+#     distutils.distutils_path = os.path.dirname(distutils.distutils_path)
 import os
 from pathlib import Path
 working_dir = Path(os.path.abspath(SPECPATH)).parent
