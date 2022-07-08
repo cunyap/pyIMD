@@ -22,7 +22,7 @@ from pyIMD.ui.poscorrection.circle import Circle
 from pyIMD.ui.poscorrection.image_filter import filter_image
 from pyIMD.ui.poscorrection.compositeLine import CompositeLine
 from skimage.io import imread
-from skimage.color import rgb2gray
+from skimage.color import rgb2gray, rgba2rgb
 from scipy import ndimage
 
 
@@ -51,8 +51,13 @@ class Scene(QGraphicsScene):
         # Open the image
         if image_path is not None:
             # image = imageio.imread(image_path).T
-            print(image_path)
-            image = ndimage.rotate(rgb2gray(imread(image_path)), -90)
+            img = imread(image_path)
+            if img.shape[2] == 4:
+                gray = rgb2gray(rgba2rgb(img))
+            else:
+                gray = rgb2gray(imread(image_path))
+
+            image = ndimage.rotate(gray, -90)
 
             if image_filter is not None:
                 image = filter_image(image, image_filter)
