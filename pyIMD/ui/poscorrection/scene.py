@@ -51,6 +51,7 @@ class Scene(QGraphicsScene):
         # Open the image
         if image_path is not None:
             # image = imageio.imread(image_path).T
+            print(image_path)
             image = ndimage.rotate(rgb2gray(imread(image_path)), -90)
 
             if image_filter is not None:
