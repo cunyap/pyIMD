@@ -69,7 +69,6 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
            sudo apt-get install libgl1-mesa-glx
-#           sudo cp -R /usr/lib/x86_64-linux-gnu/mesa/* /usr/lib64/
            echo $(ls /usr/lib64/*)
            echo $(ls /usr/lib64/libGL*)
            python -m PyInstaller pyIMD/ci/pyIMD_unix.spec
