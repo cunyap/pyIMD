@@ -51,7 +51,7 @@ developed picobalance. It is a powerful tool to investigate crucial processes in
 such as cell mass regulation. However, processing of the raw data can be challenging, as computation is needed to extract
 the mass and long-term measurements can generate large amounts of data. Here, we introduce the software package **pyIMD**  that
 automates raw data processing, particularly when investigating non-migrating cells. **pyIMD** stands for
-Python inertial mass determination and is implemented using Python 3.6 and can be used as a command line tool
+Python inertial mass determination and is implemented using Python >=3.5 and can be used as a command line tool
 or as a stand-alone version including a graphical user interface. 
 
 
@@ -67,6 +67,7 @@ interface.
    group
    api
    authors
+   cite
    license
    references
 
