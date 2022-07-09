@@ -9,6 +9,7 @@
 # *     Andreas P. Cuny - initial API and implementation
 # *******************************************************************************/
 import os
+from pathlib import Path
 from xmlunittest import XmlTestCase
 from unittest import TestCase, main
 from pyIMD.configuration.config import Settings
@@ -16,6 +17,8 @@ from pyIMD.ui.resource_path import resource_path
 
 
 class TestConfiguration(TestCase):
+
+    test_data_dir = Path(__file__).parent.parent.absolute()
 
     def setUp(self):
         TestCase.setUp(self)
@@ -57,25 +60,26 @@ class TestConfiguration(TestCase):
 
         expected_result = {'_figure_units': 'cm', '_figure_name_pre_start_with_cell': 'FitWithCellData',
                            '_calculation_mode': 'PLL', '_figure_name_measured_data': 'CalculatedCellMass',
-                           '_pre_start_with_cell_path': os.path.abspath("../examples/data/show_case/"
-                                                                        "20190110_ShowCase_PLL_A.txt"),
-                           '_measurements_path': os.path.abspath("../examples/data/show_case/"
-                                                                 "20190110_ShowCase_PLL_LongTerm.txt"),
+                           '_pre_start_with_cell_path': str(Path(self.test_data_dir / "examples" / "data" / "show_case" /
+                                                                        "20190110_ShowCase_PLL_A.txt")),
+                           '_measurements_path': str(Path(self.test_data_dir / "examples" / "data" / "show_case" /
+                                                                 "20190110_ShowCase_PLL_LongTerm.txt")),
                            '_upper_parameter_bounds': [90.0, 7, 3.0, 3.0], '_conversion_factor_deg_to_rad': -57.3,
                            '_initial_parameter_guess': [70.0, 2.0, 0.0, 0.0], '_lower_parameter_bounds':
                                [10.0, 1.0, -3, -3], '_cantilever_length': 100, '_rolling_window_size': 1000,
                            '_figure_width': 16.5, '_conversion_factor_hz_to_khz': 1000.0,
                            '_conversion_factor_px_to_mum': 0.65,
-                           '_figure_plot_every_nth_point': 1, '_project_folder_path': os.path.abspath("../examples/data/"
-                                                                                                      "show_case/"),
+                           '_figure_plot_every_nth_point': 1, '_project_folder_path': str(Path(self.test_data_dir /
+                                                                                               "examples" / "data" /
+                                                                                               "show_case")),
                            '_selected_files': ['20190110_ShowCase_PLL_B.txt',
                                                                            '20190110_ShowCase_PLL_A.txt',
                                                                            '20190110_ShowCase_PLL_LongTerm.txt'],
                            '_figure_resolution_dpi': 72, '_correct_for_frequency_offset': False,
                            '_frequency_offset_mode': 'Auto', '_frequency_offset_n_measurements_used': 1,
-                           '_frequency_offset': 0, '_pre_start_no_cell_path': os.path.abspath("../examples/data/"
-                                                                                              "show_case/"
-                                                                                              "20190110_ShowCase_PLL_B.txt"),
+                           '_frequency_offset': 0, '_pre_start_no_cell_path': str(Path(self.test_data_dir / "examples"
+                                                                                       / "data" / "show_case" /
+                                                                                       "20190110_ShowCase_PLL_B.txt")),
                            '_read_text_data_from_line': 23,
                            '_figure_name_pre_start_no_cell': 'FitNoCellData', '_text_data_delimiter': '\\t',
                            '_spring_constant': 8, '_figure_format': 'pdf', '_cell_position': 9.5, '_figure_height': 20,
@@ -85,10 +89,9 @@ class TestConfiguration(TestCase):
                            '_number_of_data_per_frame': 0, '_is_zero_outside_correction_range': True,
                            '_area': [], 'position_correction_data': []}
 
-        print(os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_B.txt"))
-        file_path1 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_B.txt")
-        file_path2 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_A.txt")
-        file_path3 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_LongTerm.txt")
+        file_path1 = str(Path(self.test_data_dir / "examples" / "data" / "show_case" / "20190110_ShowCase_PLL_B.txt"))
+        file_path2 = str(Path(self.test_data_dir / "examples" / "data" / "show_case" / "20190110_ShowCase_PLL_A.txt"))
+        file_path3 = str(Path(self.test_data_dir / "examples" / "data" / "show_case" / "20190110_ShowCase_PLL_LongTerm.txt"))
 
         self.settings.new_pyimd_project(file_path1, file_path2, file_path3, '\t', 23, 'PLL', figure_width=16.5,
                                         figure_height=20, upper_parameter_bounds=[90.0, 7, 3.0, 3.0], spring_constant=8,
@@ -99,27 +102,30 @@ class TestConfiguration(TestCase):
 
 class TestConfigurationIO(XmlTestCase):
 
+    test_data_dir = Path(__file__).parent.parent.absolute()
+
     def testNewPyimdProject(self):
         expected_result = {'_figure_units': 'cm', '_figure_name_pre_start_with_cell': 'FitWithCellData',
                            '_calculation_mode': 'PLL', '_figure_name_measured_data': 'CalculatedCellMass',
-                           '_pre_start_with_cell_path': os.path.abspath("../examples/data/show_case/"
-                                                                        "20190110_ShowCase_PLL_A.txt"),
-                           '_measurements_path': os.path.abspath("../examples/data/show_case/"
-                                                                 "20190110_ShowCase_PLL_LongTerm.txt"),
+                           '_pre_start_with_cell_path': str(Path(self.test_data_dir / "examples" / "data" / "show_case" /
+                                                                        "20190110_ShowCase_PLL_A.txt")),
+                           '_measurements_path': str(Path(self.test_data_dir / "examples" / "data" / "show_case" /
+                                                                 "20190110_ShowCase_PLL_LongTerm.txt")),
                            '_upper_parameter_bounds': [90.0, 7, 3.0, 3.0], '_conversion_factor_deg_to_rad': -57.3,
                            '_initial_parameter_guess': [70.0, 2.0, 0.0, 0.0], '_lower_parameter_bounds':
                                [10.0, 1.0, -3, -3], '_cantilever_length': 100, '_rolling_window_size': 1000,
                            '_figure_width': 16.5, '_conversion_factor_hz_to_khz': 1000.0,
                            '_conversion_factor_px_to_mum': 0.65,
-                           '_figure_plot_every_nth_point': 1, '_project_folder_path': os.path.abspath("../examples/"
-                                                                                                      "data/show_case/"),
+                           '_figure_plot_every_nth_point': 1, '_project_folder_path': str(Path(self.test_data_dir /
+                                                                                               "examples" / "data" /
+                                                                                               "show_case" )),
                            '_selected_files': ['20190110_ShowCase_PLL_B.txt', '20190110_ShowCase_PLL_A.txt',
                                                '20190110_ShowCase_PLL_LongTerm.txt'],
                            '_figure_resolution_dpi': 72, '_correct_for_frequency_offset': False,
                            '_frequency_offset_mode': 'Auto', '_frequency_offset_n_measurements_used': 1,
-                           '_frequency_offset': 0, '_pre_start_no_cell_path': os.path.abspath("../examples/data/"
-                                                                                              "show_case/"
-                                                                                              "20190110_ShowCase_PLL_B.txt"),
+                           '_frequency_offset': 0, '_pre_start_no_cell_path': str(Path(self.test_data_dir / "examples" /
+                                                                                       "data" / "show_case" /
+                                                                                    "20190110_ShowCase_PLL_B.txt")),
                            '_read_text_data_from_line': 23,
                            '_figure_name_pre_start_no_cell': 'FitNoCellData', '_text_data_delimiter': '\\t',
                            '_spring_constant': 8, '_figure_format': 'pdf', '_cell_position': 9.5, '_figure_height': 20,
@@ -129,9 +135,9 @@ class TestConfigurationIO(XmlTestCase):
                            '_number_of_data_per_frame': 0, '_is_zero_outside_correction_range': True,
                            '_area': [], 'position_correction_data': []}
 
-        file_path1 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_B.txt")
-        file_path2 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_A.txt")
-        file_path3 = os.path.abspath("../examples/data/show_case/20190110_ShowCase_PLL_LongTerm.txt")
+        file_path1 = str(Path(self.test_data_dir / "examples" / "data" / "show_case" / "20190110_ShowCase_PLL_B.txt"))
+        file_path2 = str(Path(self.test_data_dir / "examples" / "data" / "show_case" / "20190110_ShowCase_PLL_A.txt"))
+        file_path3 = str(Path(self.test_data_dir / "examples" / "data" / "show_case" / "20190110_ShowCase_PLL_LongTerm.txt"))
 
         settings = Settings()
         settings.new_pyimd_project(file_path1, file_path2, file_path3, '\t', 23, 'PLL', figure_width=16.5,

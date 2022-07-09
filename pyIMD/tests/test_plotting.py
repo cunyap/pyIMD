@@ -58,9 +58,9 @@ class TestPlotting(TestCase):
                                     [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0],
                                     [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0],
                                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-        image1 = np.zeros((7, 7), dtype=np.int)
+        image1 = np.zeros((7, 7), dtype=int)
         image1[1:6, 2:5] = 1
-        image2 = np.zeros((7, 7), dtype=np.int)
+        image2 = np.zeros((7, 7), dtype=int)
         image2[1:6, 2:5] = 1
 
         image_array = []
@@ -77,9 +77,9 @@ class TestPlotting(TestCase):
     def testGetMontageArraySize(self):
 
         expected_result = [1, 2]
-        image1 = np.zeros((7, 7), dtype=np.int)
+        image1 = np.zeros((7, 7), dtype=int)
         image1[1:6, 2:5] = 1
-        image2 = np.zeros((7, 7), dtype=np.int)
+        image2 = np.zeros((7, 7), dtype=int)
         image2[1:6, 2:5] = 1
 
         image_array = []
