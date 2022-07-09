@@ -16,6 +16,8 @@ from pyIMD.ui.resource_path import resource_path
 
 
 class TestConfiguration(TestCase):
+    
+    maxDiff = None
 
     def setUp(self):
         TestCase.setUp(self)
@@ -98,6 +100,8 @@ class TestConfiguration(TestCase):
 
 
 class TestConfigurationIO(XmlTestCase):
+    
+    maxDiff = None
 
     def testNewPyimdProject(self):
         expected_result = {'_figure_units': 'cm', '_figure_name_pre_start_with_cell': 'FitWithCellData',
