@@ -62,61 +62,61 @@ jobs:
           python -m pip install --upgrade pip
           pip install .
           python -m pip install $USER PyInstaller
-#      - name: Test with pytest
-#        run: |
-#          python -m unittest discover -s pyIMD//tests -t pyIMD/tests
-      - name: Run Linux Build
-        if: matrix.os == 'ubuntu-latest'
+      - name: Test with pytest
         run: |
-           sudo apt-get update
-           sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev
-           sudo apt-get install --reinstall libxcb-xinerama0
-           pip uninstall -y pyqt5
-           sudo apt-get install -y python3-pyqt5
-           export QT_DEBUG_PLUGINS=1
-           python -m PyInstaller pyIMD/ci/pyIMD_unix.spec
-           echo "$PWD"
-      - name: Run Windows Build
-        if: matrix.os == 'windows-latest'
-        run: |
-            python -m PyInstaller pyIMD/ci/pyIMD_win.spec
-            echo "$PWD"
-      - name: Run Darwin Mac Build
-        if: matrix.os == 'macos-latest'
-        run: |
-          python -m PyInstaller pyIMD/ci/pyIMD_osx.spec
-          echo "$PWD"
-      - name: Zip binaries
-        run: |
-          if [[ "${{ matrix.os }}" == windows-latest ]]; then
-              7z a dist/pyIMD-x86-64-${{ matrix.release_suffix }}.zip dist
-          else
-              zip -r dist/pyIMD-x86-64-${{ matrix.release_suffix }}.zip dist
-          fi
-        shell: bash
-      - name: Upload artifacs
-        uses: actions/upload-artifact@v3
-        with:
-            name: pyIMD-x86-64-${{ matrix.release_suffix }}
-            path: dist/*.zip
-      - name: Load Release URL File from release job
-        uses: actions/download-artifact@v1
-        with:
-          name: release_url
-      - name: Get Release File Name & Upload URL
-        id: get_release_info
-        run: |
-           value=$(cat release_url/release_url.txt)
-           echo ::set-output name=upload_url::$value
-        shell: bash
-#      - name: Show env v
-#        run: |
-#            echo "${{ steps.get_release_info.outputs.upload_url }}"
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.get_release_info.outputs.upload_url }}
-          files: |
-            dist/pyIMD-x86-64-${{ matrix.release_suffix }}.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          python -m unittest discover -s pyIMD/tests -t pyIMD/tests
+#       - name: Run Linux Build
+#         if: matrix.os == 'ubuntu-latest'
+#         run: |
+#            sudo apt-get update
+#            sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev
+#            sudo apt-get install --reinstall libxcb-xinerama0
+#            pip uninstall -y pyqt5
+#            sudo apt-get install -y python3-pyqt5
+#            export QT_DEBUG_PLUGINS=1
+#            python -m PyInstaller pyIMD/ci/pyIMD_unix.spec
+#            echo "$PWD"
+#       - name: Run Windows Build
+#         if: matrix.os == 'windows-latest'
+#         run: |
+#             python -m PyInstaller pyIMD/ci/pyIMD_win.spec
+#             echo "$PWD"
+#       - name: Run Darwin Mac Build
+#         if: matrix.os == 'macos-latest'
+#         run: |
+#           python -m PyInstaller pyIMD/ci/pyIMD_osx.spec
+#           echo "$PWD"
+#       - name: Zip binaries
+#         run: |
+#           if [[ "${{ matrix.os }}" == windows-latest ]]; then
+#               7z a dist/pyIMD-x86-64-${{ matrix.release_suffix }}.zip dist
+#           else
+#               zip -r dist/pyIMD-x86-64-${{ matrix.release_suffix }}.zip dist
+#           fi
+#         shell: bash
+#       - name: Upload artifacs
+#         uses: actions/upload-artifact@v3
+#         with:
+#             name: pyIMD-x86-64-${{ matrix.release_suffix }}
+#             path: dist/*.zip
+#       - name: Load Release URL File from release job
+#         uses: actions/download-artifact@v1
+#         with:
+#           name: release_url
+#       - name: Get Release File Name & Upload URL
+#         id: get_release_info
+#         run: |
+#            value=$(cat release_url/release_url.txt)
+#            echo ::set-output name=upload_url::$value
+#         shell: bash
+# #      - name: Show env v
+# #        run: |
+# #            echo "${{ steps.get_release_info.outputs.upload_url }}"
+#       - name: Release
+#         uses: softprops/action-gh-release@v1
+#         with:
+#           tag_name: ${{ steps.get_release_info.outputs.upload_url }}
+#           files: |
+#             dist/pyIMD-x86-64-${{ matrix.release_suffix }}.zip
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
