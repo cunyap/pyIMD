@@ -95,7 +95,8 @@ class TestConfiguration(TestCase):
         self.settings.new_pyimd_project(file_path1, file_path2, file_path3, '\t', 23, 'PLL', figure_width=16.5,
                                         figure_height=20, upper_parameter_bounds=[90.0, 7, 3.0, 3.0], spring_constant=8,
                                         cell_position=9.5, figure_format='pdf')
-
+        print(expected_result)
+        print(self.settings.__dict__)
         self.assertEqual(self.settings.__dict__, expected_result)
 
 
