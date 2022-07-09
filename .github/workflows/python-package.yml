@@ -40,14 +40,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest] # windows-latest, ubuntu-latest, macos-latest
+        os: [windows-latest, ubuntu-latest, macos-latest] # windows-latest, ubuntu-latest, macos-latest
         include:
           - os: ubuntu-latest
             release_suffix: linux
-#          - os: macos-latest
-#            release_suffix: apple-darwin
-#          - os: windows-latest
-#            release_suffix: windows
+          - os: macos-latest
+            release_suffix: apple-darwin
+          - os: windows-latest
+            release_suffix: windows
         python-version: ["3.7"]
     runs-on: ${{ matrix.os }}
     steps:
@@ -68,9 +68,12 @@ jobs:
       - name: Run Linux Build
         if: matrix.os == 'ubuntu-latest'
         run: |
-           sudo apt-get install libgl1-mesa-glx
-           echo $(ls /usr/lib64/*)
-           echo $(ls /usr/lib64/libGL*)
+           sudo apt-get update
+           sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev
+           sudo apt-get install --reinstall libxcb-xinerama0
+           pip uninstall -y pyqt5
+           sudo apt-get install -y python3-pyqt5
+           export QT_DEBUG_PLUGINS=1
            python -m PyInstaller pyIMD/ci/pyIMD_unix.spec
            echo "$PWD"
       - name: Run Windows Build
