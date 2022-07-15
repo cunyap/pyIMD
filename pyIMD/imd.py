@@ -29,6 +29,7 @@ import logging
 from tqdm import trange
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 __author__ = 'Andreas P. Cuny'
 
@@ -453,6 +454,12 @@ class InertialMassDetermination(QObject):
                                                 self.settings.figure_name_measured_data + '.csv', index=False, na_rep="nan")
                     self.logger.info('Done writing data to disk')
 
+                # Auto save project file
+                self.save_pyimd_project(self.result_folder + os.sep + 'AutoSaveProjectRun_{}.xml'.format(
+                    datetime.now().strftime("%Y%m%d%H%M%S")))
+                self.logger.info('Done writing pyIMD project: AutoSaveProjectRun_{}.xml'.format(
+                    datetime.now().strftime("%Y%m%d%H%M%S")))
+
                 self.logger.info('Done with all calculations')
             except Exception as e:
                 self.logger.info('Error {}'.format(e))
@@ -538,7 +545,7 @@ class InertialMassDetermination(QObject):
         phase_str = '\t'.join(['Phase'])
         amplitude_str = '\t'.join(['Amplitude', 'Amp\n'])
         offset_str = '\t'.join(['Offset'])
-        other_column_name = 'Untitled'  # We use this to determine how many repeating rows we should expect.
+        other_column_name = ['Untitled'.lower(), 'Unbenannt'.lower()]  # We use this to determine how many repeating rows we should expect.
         # I.e if there are 3 defined column names Amplitude, Phase, Frequency followed by Untitled 3 ... n we would
         # expect this data to be in junks of 3 rows.
         n_rows = None
@@ -551,7 +558,7 @@ class InertialMassDetermination(QObject):
                 amp_idx = idx
             if ch.name.lower() in offset_str.lower():
                 offset_idx = idx
-            if ch.name.lower()[0:8] in other_column_name.lower():
+            if ch.name.lower()[0:9].strip() in other_column_name:
                 if n_rows is None:
                     n_rows = idx
 
