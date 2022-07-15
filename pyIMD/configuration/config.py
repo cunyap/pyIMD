@@ -19,6 +19,7 @@ import datetime
 import numpy as np
 from lxml import etree
 from pyIMD.configuration.defaults import *
+from pyIMD.__init__ import __version__, __operating_system__
 
 __author__ = 'Andreas P. Cuny'
 
@@ -919,7 +920,7 @@ class Settings(object):
         """
         try:
             # Create the root element
-            root = etree.Element('PyIMDSettings', creator='pyIMD',
+            root = etree.Element('PyIMDSettings', creator='pyIMD', version=__version__, os=__operating_system__,
                                  timestamp=datetime.datetime.now().strftime('%Y_%m_%d__%H_%M_%S'))
             # Make a new document tree
             doc = etree.ElementTree(root)
