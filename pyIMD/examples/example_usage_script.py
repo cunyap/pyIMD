@@ -10,15 +10,16 @@
 # *******************************************************************************/
 
 from pyIMD.imd import InertialMassDetermination
+from pathlib import Path
 
 # Create the inertial mass determination object
 imd = InertialMassDetermination()
 
 # Create a config file for the project / experiment to analyze using default values. Note non default parameters can be
 # added as optional arguments for e.g. spring_constant = 5.
-file_path1 = "/pyIMD/examples/data/pll/20170712_RSN_3_B"
-file_path2 = "/pyIMD/examples/data/pll/20170712_RSN_3_A"
-file_path3 = "/pyIMD/examples/data/pll/20170712_RSN_3_A_long_term.tdms"
+file_path1 = str(Path(Path(__file__).parent, 'data', 'pll', '20170712_RSN_3_B.txt'))
+file_path2 = str(Path(Path(__file__).parent, 'data', 'pll', '20170712_RSN_3_A.txt'))
+file_path3 = str(Path(Path(__file__).parent, 'data', 'pll', '20170712_RSN_3_A_long_term.tdms'))
 imd.create_pyimd_project(file_path1, file_path2, file_path3, '\t', 23, 'PLL', figure_width=5.4, figure_height=9.35,
                          initial_parameter_guess=[73.0, 5.2, 0.0, 0.0], upper_parameter_bounds=[100.0, 7.0, 3.0, 3.0],
                          spring_constant=8.0, cell_position=9.5, cantilever_length=100.0, figure_format='pdf')
@@ -38,10 +39,10 @@ imd.run_inertial_mass_determination()
 
 # Save the config file for the project / experiment for documentation purpose or to re-run with different /
 # same parameter later
-imd.save_pyimd_project("/pyIMD/examples/data/show_case/pyIMDProjectName.xml")
+imd.save_pyimd_project(str(Path(Path(__file__).parent, 'data', 'show_case', 'pyIMDProjectName.xml')))
 
 # To load an existing project type
-imd.load_pyimd_project("/pyIMD/examples/data/show_case/pyIMDProjectName.xml")
+imd.load_pyimd_project(str(Path(Path(__file__).parent, 'data', 'show_case', 'pyIMDProjectName.xml')))
 # change a parameter i.e
 imd.settings.figure_format = 'png'
 # and run again
