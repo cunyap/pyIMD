@@ -29,7 +29,7 @@ class TestIO(TestCase):
 
         df = pd.DataFrame()
         for f in files:
-            df = df.append(read_from_text(f, delimiter, read_from_row))
+            df = pd.concat([df, read_from_text(f, delimiter, read_from_row)])
 
         self.assertEqual(df.shape, (5, 7))
 
@@ -44,7 +44,7 @@ class TestIO(TestCase):
 
         df = pd.DataFrame()
         for f in files:
-            df = df.append(read_from_file(f, delimiter, header=0))
+            df = pd.concat([df, read_from_file(f, delimiter, header=0)])
 
         self.assertEqual(df.shape, (10, 7))
 
@@ -59,7 +59,7 @@ class TestIO(TestCase):
 
         df = pd.DataFrame()
         for f in files:
-            df = df.append(read_from_file(f, delimiter, header=0))
+            df = pd.concat([df, read_from_file(f, delimiter, header=0)])
 
         self.assertEqual(df.shape, (10, 7))
 
@@ -74,7 +74,7 @@ class TestIO(TestCase):
 
         df = pd.DataFrame()
         for f in files:
-            df = df.append(read_from_file(f, delimiter, header=0))
+            df = pd.concat([df, read_from_file(f, delimiter, header=0)])
 
         self.assertEqual(df.shape, (10, 7))
 
@@ -87,7 +87,7 @@ class TestIO(TestCase):
 
         df = pd.DataFrame()
         for f in files:
-            df = df.append(read_from_file(f, delimiter, header=0))
+            df = pd.concat([df, read_from_file(f, delimiter, header=0)])
 
         self.assertEqual(df.shape, (10, 7))
 

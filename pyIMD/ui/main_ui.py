@@ -209,7 +209,7 @@ class IMDWindow(QtWidgets.QMainWindow):
 
         self.graphicsView.plotItem.ctrlMenu = None
         self.imd_icon = QGraphicsSvgItem(resource_path(str(Path("ui", "icons", "pyIMD_logo_vect.svg"))))
-        self.imd_icon.scale(1, -1)
+        self.imd_icon.setTransform(self.imd_icon.transform().scale(1, -1))
 
         self.graphicsView.addItem(self.imd_icon)
         self.graphicsView.hideAxis('bottom')

@@ -14,7 +14,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QPushButton, QApplication, QStyle, \
     QTextBrowser, QWidget, QGridLayout, QTextEdit, QCheckBox, QVBoxLayout, QHBoxLayout, QLabel
-from PyQt5.Qt import QFont, QIcon
+from PyQt5.Qt import QIcon
 from pyIMD.ui.resource_path import resource_path
 from pyIMD.__init__ import __version__, __operating_system__
 
@@ -41,7 +41,7 @@ class QuickInstructions(QWidget):
         ok.setMaximumWidth(100)
         ok.clicked.connect(self.close)
         self.chk = QCheckBox('Display quick instructions at startup')
-        self.chk.setFont(QFont('Arial', 9, QFont.Bold))
+        self.chk.setFont(QtGui.QFontDatabase.font(QtGui.QFontDatabase(), "Helvetica", "Bold", 9))
         self.chk.setChecked(1)
         self.chk.clicked.connect(self.on_display_qi)
 
@@ -71,7 +71,8 @@ class QuickInstructions(QWidget):
                                         '</ul>'
                                         'You can open this window any time from the Help menu.</ul>')
         self.quick_instructions.setReadOnly(1)
-        self.quick_instructions.setFont(QFont('Arial', 9))
+        self.quick_instructions.setFont(
+            QtGui.QFontDatabase.font(QtGui.QFontDatabase(), "Helvetica", "Regular", 12))
         grid.addWidget(self.quick_instructions, 0, 0, 1, 0)
         grid.addWidget(ok, 1, 1)
         grid.addWidget(self.chk, 1, 0)
@@ -163,11 +164,11 @@ class About(QWidget):
         self.le.setAlignment(Qt.AlignCenter)
         self.build.setAlignment(Qt.AlignCenter)
 
-        font_b = QtGui.QFont()
-        font_b.setPointSize(9)
+        font_b = QtGui.QFontDatabase.font(QtGui.QFontDatabase(), "Helvetica", "Regular", 9) # QtGui.QFont()
+        # font_b.setPointSize(9)
         self.build.setFont(font_b)
-        font = QtGui.QFont()
-        font.setPointSize(11)
+        font = QtGui.QFontDatabase.font(QtGui.QFontDatabase(), 'Helvetica', "Regular", 9) #QtGui.QFont()
+        # font.setPointSize(11)
         self.author.setFont(font)
         self.copyright.setFont(font)
         self.dependencies.setFont(font_b)

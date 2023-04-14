@@ -42,7 +42,7 @@ def plot_fitting(x, y, resonance_frequency, parameter):
     col_names = list(data)
 
     # Plot data
-    p = ggplot(aes(x=col_names[0], y=col_names[1]), data=data) + \
+    p = ggplot(data=data, mapping=aes(x=col_names[0], y=col_names[1])) + \
         geom_point() + \
         geom_line(aes(x=col_names[0], y=col_names[2]),  color='red', size=0.5) + \
         theme_seaborn(style='ticks', context='talk', font_scale=0.75) + \
@@ -122,7 +122,7 @@ def plot_mass(calculated_cell_mass, plot_every_nth_point):
     calculated_cell_mass = calculated_cell_mass.astype(float)  # To make sure time is a float at this point
 
     # Plot data
-    p = ggplot(aes(x=col_names[0], y=col_names[1]), data=calculated_cell_mass) + \
+    p = ggplot(data=calculated_cell_mass, mapping=aes(x=col_names[0], y=col_names[1])) + \
         geom_point(alpha=0.1) + \
         geom_line(aes(y=col_names[2]), color='red') + \
         theme_bw()

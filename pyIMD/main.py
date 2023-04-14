@@ -10,8 +10,11 @@
 # *******************************************************************************/
 
 import sys
+from pathlib import Path
+from PyQt5 import  QtGui
 from PyQt5.QtWidgets import QApplication
 from pyIMD.ui.main_ui import IMDWindow
+from pyIMD.ui.resource_path import resource_path
 
 
 def show_ui():
@@ -24,6 +27,7 @@ def show_ui():
 if __name__ == '__main__':
 
     app = QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon(resource_path(str(Path("ui", "icons", "pyIMD_logo_icon.ico")))))
     main = IMDWindow()
     main.show()
     sys.exit(app.exec_())
