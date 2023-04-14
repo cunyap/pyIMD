@@ -40,13 +40,40 @@ pyIMD can then be used trough its graphical user interface (GUI) directly.
 From sources
 ------------
 
+First, install Python. An easy way to do so is to install miniconda for your operating system with Python 3.7-11.
+
+`https://docs.conda.io/en/latest/miniconda.html`
+
+If you have other Python installations it is good practice to install everything new into a separate environment.
+Also such an environment can be later used to create a snapshot of your installation and shared with other to build
+exactly the identical environment.
+
+Start the terminal (Linux, Mac OS) or (Anaconda Prompt under Windows) and type:
+
+.. code-block:: console
+
+    conda create -n <MYENV> python=3.7
+
+
+Rename <MYENV> with the name you want to give to your environment. For example pyIMD.
+pyIMD has been tested with Python 3.7-3.11.
+
+Activate the environment you just created.
+
+.. code-block:: console
+
+    conda activate <MYENV>
+
+
+_Note: more information about conda environments can be found [here](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)_
+
 The latest sources for pyIMD can be downloaded from the `Github repo`_.
 
 You can clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://git.gitlab.com/csb.ethz/pyIMD.git
+    $ git clone https://github.com/cunyap/pyIMD.git
 
 Once you have a copy of the source, navigate into the directory and run:
 
@@ -54,4 +81,18 @@ Once you have a copy of the source, navigate into the directory and run:
 
     $ python setup.py install .
 
-.. _Github repo: https://git.gitlab.com/csb.ethz/pyIMD.git
+Then add the repository to the Python path:
+
+.. code-block:: console
+
+    export PYTHONPATH=$PYTHONPATH:pwd
+
+To run the demo Jupyter notebook also install Jupyter Lab:
+
+.. code-block:: console
+
+    pip install jupyterlab
+
+For development we suggest to install PyCharm where pyIMD can be run from source to either as script or with the GUI.
+
+.. _Github repo: https://github.com/cunyap/pyIMD
