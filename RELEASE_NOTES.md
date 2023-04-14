@@ -1,6 +1,6 @@
-We are happy to announce a new release of pyIMD (v0.1.4).
+We are happy to announce a new release of pyIMD (v0.1.5).
 
 * New features are: 
-    * Project auto save and add version number to project file.
+    * Several bugfixes to support Python version 3.7-11.
 
 Please find compiled the binaries below.

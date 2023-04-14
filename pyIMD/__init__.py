@@ -14,6 +14,6 @@ import platform
 
 __author__ = 'Andreas P. Cuny'
 
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 __operating_system__ = '{} {}'.format(platform.system(), platform.architecture()[0])
