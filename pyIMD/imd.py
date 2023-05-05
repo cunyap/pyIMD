@@ -578,9 +578,9 @@ class InertialMassDetermination(QObject):
                 data.iloc[int(iSweep/n_rows), 256] = ((data.iloc[int(iSweep/n_rows), 256].to_datetime64() - np.datetime64(
                     '1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')).item()
 
-            times = data.iloc[:, 256]
             data = data.drop(index=sweeps + 3)
             data = data.reset_index(drop=True)
+            times = data.iloc[:, 256]
             data.iloc[:, 256] = times
             self.data_measured = data
 
