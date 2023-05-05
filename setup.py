@@ -71,7 +71,7 @@ setup(name='pyIMD',
                    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
                    'Topic :: Scientific/Engineering'
                    ],
-      install_requires=['pandas>=0.20.0', 'numpy>=1.14.5', 'scipy>=1.4.1', 'nptdms>=0.12.0', '<1.6.2', 'tqdm>=4.23.4',
+      install_requires=['pandas>=0.20.0', 'numpy>=1.14.5', 'scipy>=1.4.1', 'nptdms>=0.12.0, <1.6.2', 'tqdm>=4.23.4',
                         'plotnine', 'PyQT5', 'lxml', 'xmltodict', 'matplotlib', 'pyyaml', 'pyqtgraph',
                         'xmlunittest', 'scikit-image', 'pgcolorbar>=1.1.1', 'alphashape', 'cmlib', 'imagecodecs',
                         'ipython'],
